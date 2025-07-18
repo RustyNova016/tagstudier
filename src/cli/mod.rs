@@ -1,9 +1,11 @@
+pub mod link_urls;
 pub mod mv;
 use clap::Parser;
 use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
+use crate::cli::link_urls::LinkUrlsCommand;
 use crate::cli::mv::MVCommand;
 
 /// Tools for TagStudio
@@ -51,13 +53,15 @@ impl Cli {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
-    MV(MVCommand)
+    MV(MVCommand),
+    LinkUrls(LinkUrlsCommand)
 }
 
 impl Commands {
     pub async fn run(&self)  {
         match self {
             Self::MV(val) => val.run().await,
+            Self::LinkUrls(val) => val.run().await,
         }
     }
 }
