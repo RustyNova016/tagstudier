@@ -1,16 +1,10 @@
 use std::env::current_dir;
 
 use clap::Parser;
-use regex::Regex;
 use streamies::TryStreamies as _;
 use tagstudio_db::models::entry::Entry;
 use tagstudio_db::models::library::Library;
-use tagstudio_db::models::text_field::TextField;
-use tagstudio_db::sqlx::Acquire;
-use tracing::info;
-
 use crate::apis::pixiv::fetch_illust_data;
-use crate::apis::pixiv::models::IllustResponse;
 
 /// Add links to images based on their filename
 #[derive(Parser, Debug, Clone)]
@@ -67,14 +61,3 @@ impl TagImportCommand {
         illust_data.associate_data(conn, entry).await;
     }
 }
-
-// #[cfg(test)]
-// mod test {
-//     use tagstudio_db::models::library::Library;
-
-//     #[tokio::test]
-//     pub async fn import_test() {
-//         let lib = Library::try_new("/root/projects/tagstudio/.TagStudio/ts_library.sqlite".into()).expect("Couldn't get the root library");
-
-//     }
-// }

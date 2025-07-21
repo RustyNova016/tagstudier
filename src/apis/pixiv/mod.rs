@@ -1,3 +1,12 @@
+use std::sync::LazyLock;
+use std::num::NonZeroU32;
+use governor::clock;
+use governor::middleware::NoOpMiddleware;
+use governor::state::InMemoryState;
+use governor::state::NotKeyed;
+use governor::Quota;
+
+use governor::RateLimiter;
 use reqwest::Client;
 use reqwest::header;
 use tracing::debug;
@@ -7,9 +16,14 @@ use crate::apis::pixiv::models::IllustResponse;
 pub mod models;
 pub mod tag_on_pixiv;
 
+pub static RATE_LIMIT: LazyLock<RateLimiter<NotKeyed, InMemoryState, clock::DefaultClock, NoOpMiddleware>> = LazyLock::new(|| {
+            let quota =Quota::per_minute(NonZeroU32::new(15).unwrap()).allow_burst(NonZeroU32::new(5).unwrap());
+            RateLimiter::direct(quota)
+});
+
 pub async fn fetch_illust_data(illust_id: &str) -> IllustResponse {
     // TODO: Ratelimit
-    // TODO: Error checking 
+    // TODO: Error checking
 
     let mut headers = header::HeaderMap::new();
 
@@ -25,6 +39,7 @@ pub async fn fetch_illust_data(illust_id: &str) -> IllustResponse {
 
     let url = format!("https://www.pixiv.net/ajax/illust/{illust_id}");
     debug!("Requesting post: {url}");
+    RATE_LIMIT.until_ready().await;
     let text = client.get(url).send().await.unwrap().text().await.unwrap();
 
     serde_json::from_str(&text).unwrap()

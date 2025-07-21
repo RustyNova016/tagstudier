@@ -9,7 +9,8 @@ pub static CONFIG_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         .expect(
             "Couldn't find the standard directory configuration. Is your system an oddball one?",
         )
-        .config_dir().to_path_buf();
+        .config_dir()
+        .to_path_buf();
 
     if !fs::exists(&path).unwrap() {
         fs::create_dir_all(&path).expect("Couldn't create config directory");

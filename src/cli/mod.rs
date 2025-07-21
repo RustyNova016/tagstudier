@@ -1,4 +1,6 @@
+pub mod rename_tag;
 pub mod link_urls;
+pub mod merge_tags;
 pub mod mv;
 pub mod tag_import;
 use clap::Parser;
@@ -7,7 +9,9 @@ use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
 use crate::cli::link_urls::LinkUrlsCommand;
+use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
+use crate::cli::rename_tag::RenameTagCommand;
 use crate::cli::tag_import::TagImportCommand;
 
 /// Tools for TagStudio
@@ -54,15 +58,19 @@ impl Cli {
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
     LinkUrls(LinkUrlsCommand),
+    MergeTags(MergeTagCommand),
     MV(MVCommand),
+    RenameTag(RenameTagCommand),
     TagImport(TagImportCommand),
 }
 
 impl Commands {
     pub async fn run(&self) {
         match self {
-            Self::MV(val) => val.run().await,
             Self::LinkUrls(val) => val.run().await,
+            Self::MergeTags(val) => val.run().await,
+            Self::MV(val) => val.run().await,
+            Self::RenameTag(val) => val.run().await,
             Self::TagImport(val) => val.run().await,
         }
     }
