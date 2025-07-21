@@ -1,5 +1,6 @@
 pub mod link_urls;
 pub mod mv;
+pub mod tag_import;
 use clap::Parser;
 use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
@@ -7,6 +8,7 @@ use clap_verbosity_flag::Verbosity;
 
 use crate::cli::link_urls::LinkUrlsCommand;
 use crate::cli::mv::MVCommand;
+use crate::cli::tag_import::TagImportCommand;
 
 /// Tools for TagStudio
 #[derive(Parser, Debug, Clone)]
@@ -42,8 +44,6 @@ impl Cli {
         if let Some(command) = &self.command {
             command.run().await;
         }
-
-        
     }
 
     // fn print_completions<G: Generator>(gene: G, cmd: &mut Command) {
@@ -53,15 +53,17 @@ impl Cli {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
+    LinkUrls(LinkUrlsCommand),
     MV(MVCommand),
-    LinkUrls(LinkUrlsCommand)
+    TagImport(TagImportCommand),
 }
 
 impl Commands {
-    pub async fn run(&self)  {
+    pub async fn run(&self) {
         match self {
             Self::MV(val) => val.run().await,
             Self::LinkUrls(val) => val.run().await,
+            Self::TagImport(val) => val.run().await,
         }
     }
 }
