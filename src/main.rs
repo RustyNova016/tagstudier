@@ -1,15 +1,15 @@
-pub mod apis;
-pub(crate) mod cli;
-pub(crate) mod error;
-
 use clap::Parser as _;
 
 use crate::cli::Cli;
 pub(crate) use crate::error::Error;
 use crate::interface::tracing::init_tracer;
 
-pub mod interface;
-pub mod utils;
+pub(crate) mod apis;
+pub(crate) mod cli;
+pub(crate) mod error;
+pub(crate) mod interface;
+pub(crate) mod models;
+pub(crate) mod utils;
 
 #[tokio::main]
 async fn main() {

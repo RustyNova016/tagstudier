@@ -17,12 +17,11 @@ pub mod models;
 pub mod tag_on_pixiv;
 
 pub static RATE_LIMIT: LazyLock<RateLimiter<NotKeyed, InMemoryState, clock::DefaultClock, NoOpMiddleware>> = LazyLock::new(|| {
-            let quota =Quota::per_minute(NonZeroU32::new(15).unwrap()).allow_burst(NonZeroU32::new(5).unwrap());
+            let quota =Quota::per_minute(NonZeroU32::new(12).unwrap()).allow_burst(NonZeroU32::new(1).unwrap());
             RateLimiter::direct(quota)
 });
 
 pub async fn fetch_illust_data(illust_id: &str) -> IllustResponse {
-    // TODO: Ratelimit
     // TODO: Error checking
 
     let mut headers = header::HeaderMap::new();

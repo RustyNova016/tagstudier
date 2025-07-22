@@ -2,7 +2,6 @@ use std::env::current_dir;
 
 use clap::Parser;
 use tagstudio_db::models::library::Library;
-use tagstudio_db::sqlx::Acquire;
 
 use crate::utils::cli_parser::parse_tag_name;
 
