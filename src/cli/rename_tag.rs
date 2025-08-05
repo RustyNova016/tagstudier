@@ -25,8 +25,12 @@ impl RenameTagCommand {
             .await
             .expect("Couldn't open a new connection to the library database");
 
-        let mut tag = parse_tag_name(conn, &self.tag).await.expect("Couldn't get tag");
+        let mut tag = parse_tag_name(conn, &self.tag)
+            .await
+            .expect("Couldn't get tag");
 
-        tag.rename(conn, &self.new_name, false).await.expect("Couldn't rename tag");
+        tag.rename(conn, &self.new_name, false)
+            .await
+            .expect("Couldn't rename tag");
     }
 }

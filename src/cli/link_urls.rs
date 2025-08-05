@@ -47,7 +47,7 @@ impl LinkUrlsCommand {
             if let Some(url) = url {
                 info!("Adding url `{url}` for `{}`", entry.filename);
                 if !self.dry {
-                    TextField::insert_text_field(conn, entry.id, "URL".to_string(), url)
+                    TextField::insert_text_field(conn, entry.id, "URL", &url)
                         .await
                         .expect("Couldn't save url field");
                 }
@@ -66,7 +66,7 @@ fn parse_pixiv_mobile(name: &str) -> Option<String> {
 
     let id = result.get(1)?;
 
-    Some(format!("https://www.pixiv.net/en/artwork/{}", id.as_str()))
+    Some(format!("https://www.pixiv.net/en/artworks/{}", id.as_str()))
 }
 
 #[cfg(test)]

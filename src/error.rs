@@ -14,21 +14,10 @@ pub enum Error {
 
     #[error("Incorrect input for CLI: {0}")]
     CliInput(String, String),
+
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    Serde(#[from] serde_json::Error),
 }
-
-// pub trait CliResult {
-//     fn unwrap_parse_or_exit(self) -> Self;
-// }
-
-// impl<T> CliResult for Result<T, crate::Error> {
-//     fn unwrap_parse_or_exit(self) -> Self {
-//         match self {
-//             Self::Err(Error::CliInput(data, msg)) => {
-//                 error!("Invalid input: `{data}`: {msg}");
-//                 std::process::exit(exit_code);
-//             }
-//             Self::Ok(val) => Ok(val),
-//             Self::Err(val) => Err(val),
-//         }
-//     }
-// }

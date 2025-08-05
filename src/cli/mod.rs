@@ -1,13 +1,17 @@
-pub mod rename_tag;
+pub mod download;
+pub mod download_bookmarks;
 pub mod link_urls;
 pub mod merge_tags;
 pub mod mv;
+pub mod rename_tag;
 pub mod tag_import;
 use clap::Parser;
 use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
+use crate::cli::download::DownloadCommand;
+use crate::cli::download_bookmarks::DownloadBookmarksCommand;
 use crate::cli::link_urls::LinkUrlsCommand;
 use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
@@ -46,7 +50,7 @@ impl Cli {
         // }
 
         if let Some(command) = &self.command {
-            command.run().await;
+            command.run().await.unwrap();
         }
     }
 
@@ -57,6 +61,8 @@ impl Cli {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
+    Download(DownloadCommand),
+    DownloadBookmarks(DownloadBookmarksCommand),
     LinkUrls(LinkUrlsCommand),
     MergeTags(MergeTagCommand),
     MV(MVCommand),
@@ -65,13 +71,17 @@ pub enum Commands {
 }
 
 impl Commands {
-    pub async fn run(&self) {
+    pub async fn run(&self) -> crate::ColEyre {
         match self {
+            Self::Download(val) => val.run().await?,
+            Self::DownloadBookmarks(val) => val.run().await?,
             Self::LinkUrls(val) => val.run().await,
             Self::MergeTags(val) => val.run().await,
             Self::MV(val) => val.run().await,
             Self::RenameTag(val) => val.run().await,
-            Self::TagImport(val) => val.run().await,
+            Self::TagImport(val) => val.run().await?,
         }
+
+        Ok(())
     }
 }
