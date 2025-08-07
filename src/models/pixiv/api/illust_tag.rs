@@ -94,7 +94,7 @@ impl IllustTagsTags {
         let mut trans = conn.begin().await?;
         let new_tag = new_tag.insert_tag(&mut trans).await?;
 
-        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut *trans, PIXIV_TAG_IMPORT)
+        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_TAG_IMPORT)
             .await
             .unwrap();
 

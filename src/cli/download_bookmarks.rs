@@ -33,11 +33,7 @@ impl DownloadBookmarksCommand {
             .map_ok(async |bookmark| bookmark.download(&lib, self.overwrite_file).await)
             .extract_future_ok()
             .buffer_unordered(1)
-            .map(|elem| match elem {
-                Err(err) => Err(err),
-                Ok(Err(err)) => Err(err),
-                Ok(Ok(ok)) => Ok(ok),
-            });
+            .flatten_result_ok();
 
         pin_mut!(stream);
 

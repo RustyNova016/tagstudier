@@ -18,7 +18,7 @@ pub impl Path {
 
     fn create_file_if_not_exist(&self) -> Result<(), io::Error> {
         if !self.is_file() {
-            match File::create_new(&self) {
+            match File::create_new(self) {
                 Ok(_) => return Ok(()),
                 Err(err) => match err.kind() {
                     io::ErrorKind::AlreadyExists => {

@@ -63,8 +63,8 @@ impl IllustPage {
         }
 
         // Then fetch the image
-        debug!("Fetching image: {url}");
         PIXIV_RATE_LIMIT.until_ready().await;
+        debug!("Fetching image: {url}");
         let img_bytes = IPXIM_HTTP_CLIENT.get(url).send().await?.bytes().await?;
 
         let image = image::load_from_memory(&img_bytes)?;

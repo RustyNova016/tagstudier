@@ -30,9 +30,9 @@ pub static PIXIV_CONFIG: LazyLock<Config> = LazyLock::new(|| {
         .context("Couldn't get the root library")
         .unwrap();
     let file_path = lib.path.join(".TagStudio/tagerine_config.json");
-    let file = File::open(file_path).unwrap();
+    let file = File::open(file_path).expect("Couldn't read the configuration file");
     let reader = BufReader::new(file);
-    serde_json::from_reader(reader).unwrap()
+    serde_json::from_reader(reader).expect("Couldn't parse the configuration file. Make sure it is correct")
 });
 
 pub static PIXIV_REQWEST_CLIENT: LazyLock<Client> = LazyLock::new(|| {

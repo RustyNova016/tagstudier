@@ -80,14 +80,14 @@ impl IllustBody {
             .await?;
 
         if self.ai_type == 2 {
-            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut *trans, AI_TAG)
+            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut trans, AI_TAG)
                 .await
                 .unwrap();
 
             entry.add_tags(&mut trans, &ai_gen_tag).await.unwrap();
         }
 
-        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut *trans, PIXIV_DATA_IMPORT)
+        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_DATA_IMPORT)
             .await
             .unwrap();
 
@@ -150,20 +150,14 @@ impl IllustBody {
                     .await
             })
             .buffer_unordered(1)
-            .map_ok(|vals| stream::iter(vals))
+            .map_ok(stream::iter)
             .flatten_ok()
             .map_ok(async |entry| {
                 self.apply_to_entry(&mut *lib.db.get().await?, &entry)
                     .await
                     .map(|_| entry)
             })
-            .extract_future_ok()
-            .buffer_unordered(1)
-            .map(|elem| match elem {
-                Err(err) => Err(err),
-                Ok(Err(err)) => Err(err),
-                Ok(Ok(ok)) => Ok(ok),
-            })
+            .try_buffer_unordered(8)
             .try_collect_vec()
             .await
     }

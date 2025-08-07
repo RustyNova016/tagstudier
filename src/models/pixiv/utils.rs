@@ -1,3 +1,5 @@
+use core::fmt::Display;
+
 use crate::models::pixiv::PixivProvider;
 
 impl PixivProvider {
@@ -7,5 +9,9 @@ impl PixivProvider {
         }
 
         None
+    }
+
+    pub fn get_illust_url_from_id(id: impl Display) -> String {
+        format!("https://www.pixiv.net/en/artworks/{id}")
     }
 }
