@@ -24,6 +24,7 @@ use tracing_subscriber::util::SubscriberInitExt as _;
 use crate::cli::Cli;
 use crate::interface::tracing::file_format::FileFormatter;
 use crate::utils::constants::LOG_DIR;
+use crate::utils::tracing::COUNT_STYLE;
 
 pub mod file_format;
 
@@ -35,7 +36,7 @@ pub fn init_tracer(cli: &Cli) -> WorkerGuard {
         .with_target("tagstudio_db", Level::DEBUG);
 
     let indicatif_layer = IndicatifLayer::new()
-        // .with_progress_style(COUNT_STYLE.to_owned())
+        .with_progress_style(COUNT_STYLE.to_owned())
         .with_span_child_prefix_symbol("└─")
         .with_span_child_prefix_indent("  ");
 

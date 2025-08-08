@@ -1,46 +1,63 @@
+use core::future::ready;
+
+use color_eyre::eyre::Ok;
 use futures::StreamExt;
 use futures::TryStreamExt;
 use futures::stream;
 use serde::Deserialize;
 use serde::Serialize;
+use streamies::TryStreamies;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
+use tracing::debug;
 
 use crate::ColEyre;
 use crate::ColEyreVal;
+use crate::exts::tagstudio_db_ext::entry::EntryExt;
 use crate::models::pixiv::PixivProvider;
+use crate::models::pixiv::special_tags::PIXIV_DATA_IMPORT;
+use crate::models::pixiv::utils::StringOrNum;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BookmarkItem {
-    pub id: String,
+    pub id: StringOrNum,
     pub title: String,
     pub user_name: String,
     pub page_count: u64,
     pub illust_type: u64,
 }
+
 impl BookmarkItem {
     pub async fn download(&self, lib: &Library, overwrite_file: bool) -> ColEyre {
-        // Skip downloading if already downloaded
-        if !overwrite_file && self.is_downloaded(lib).await? {
+        // Skip if the illust is removed
+        if &self.title == "-----" {
+            debug!("Skipping download of id `{}: Deleted`", self.id);
             return Ok(());
         }
 
-        PixivProvider::download_illust_id(lib, self.id.parse()?, overwrite_file).await
+        // Skip downloading if already downloaded
+        if !overwrite_file && self.is_downloaded(lib).await? {
+            debug!("Skipping download of id `{}: Already downloaded`", self.id);
+            return Ok(());
+        }
+
+        PixivProvider::download_illust_id(lib, self.id.number()?, overwrite_file).await
     }
 
     pub async fn is_downloaded(&self, lib: &Library) -> ColEyreVal<bool> {
-        stream::iter(0..self.page_count)
+        let id = self.id.number()?;
+
+        let missing_data = stream::iter(0..self.page_count)
             .map(async |page| {
-                Ok(!Entry::find_by_path(
-                    &mut *lib.db.get().await?,
-                    &format!("Tagerine Downloads/Pixiv/illust_{}_p{page}.png", self.id),
-                )
-                .await?
-                .is_empty())
+                Entry::find_downloaded_pixiv_entries(lib, id, page)
+                    .await
+                    .map(|entries| entries.is_empty())
             })
             .buffer_unordered(8)
-            .try_all(|b| async move { b })
-            .await
+            .try_any(|empty| ready(empty))
+            .await?;
+
+        Ok(!missing_data)
     }
 }

@@ -1,4 +1,8 @@
+use std::thread;
+
 use color_eyre::eyre::Context as _;
+use futures::FutureExt;
+use futures::Stream;
 use futures::StreamExt;
 use futures::TryStreamExt;
 use futures::stream;
@@ -13,10 +17,10 @@ use tagstudio_db::query::Queryfragments;
 use tagstudio_db::query::eq_field::EqField;
 use tagstudio_db::query::eq_field::FieldValue;
 
-use crate::exts::sqlx_ext::AcquireWrite;
 use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::constants::AI_TAG;
+use crate::exts::sqlx_ext::AcquireWrite;
 use crate::models::pixiv::PixivProvider;
 use crate::models::pixiv::api::illust_tag::IllustTags;
 use crate::models::pixiv::api::illust_urls::IllustUrls;
@@ -136,30 +140,58 @@ impl IllustBody {
         Ok(())
     }
 
-    pub async fn download_images(
+    pub fn download_images_stream(
         &self,
         lib: &Library,
         overwrite_file: bool,
-    ) -> ColEyreVal<Vec<Entry>> {
+    ) -> ColEyreVal<impl Stream<Item = ColEyreVal<Entry>>> {
         let id: u64 = self.illust_id.parse()?;
-        let pages = PixivProvider::fetch_illust_pages(id).await?;
 
-        stream::iter(pages)
-            .enumerate()
-            .map(async |(nb, page)| {
-                page.download_and_insert(lib, id, nb.try_into().unwrap(), overwrite_file)
-                    .await
+        let stream = PixivProvider::fetch_illust_pages(id)
+            .into_stream()
+            .map_ok(|pages| stream::iter(pages).enumerate())
+            .flatten_ok()
+            // Downlod the images
+            .map_ok(move |(nb, page)| {
+                let id = id.clone();
+                let overwrite_file = overwrite_file.clone();
+                async move {
+                    page.download_and_insert(lib, id, nb.try_into().unwrap(), overwrite_file)
+                        .await
+                }
             })
-            .buffer_unordered(8)
+            .try_buffer_unordered(8)
             .map_ok(stream::iter)
             .flatten_ok()
+            // Add the extra data
             .map_ok(async |entry| {
                 self.apply_to_entry(&mut *lib.db.get().await?, &entry)
                     .await
                     .map(|_| entry)
             })
-            .try_buffer_unordered(8)
+            .try_buffer_unordered(8);
+
+        Ok(stream)
+    }
+
+    pub async fn download_images(
+        &self,
+        lib: &Library,
+        overwrite_file: bool,
+    ) -> ColEyreVal<Vec<Entry>> {
+        self.download_images_stream(lib, overwrite_file)?
             .try_collect_vec()
             .await
     }
+
+    // pub async fn download_stream(
+    //     lib: &Library,
+    //     id: u64,
+    //     overwrite_file: bool,
+    // ) -> ColEyreVal<impl Stream<Item = ColEyreVal<Entry>>> {
+    //     let illust = PixivProvider::fetch_illust(id).await?;
+    //     illust.download_images(lib, overwrite_file).await?;
+
+    //     Ok(())
+    // }
 }

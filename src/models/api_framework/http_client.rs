@@ -17,7 +17,7 @@ impl HTTPClient {
     }
 
     pub async fn get(&self, request: ApiRequest) -> Result<Response, crate::Error> {
-        while request.tries < request.max_tries {
+        while request.tries <= request.max_tries {
             self.rate_limit.until_ready().await;
 
             // Send the query
@@ -28,11 +28,18 @@ impl HTTPClient {
                 request.url, request.tries
             );
 
-            //TODO: Retries
-
-            return Ok(http_request.send().await?);
+            match http_request.send().await {
+                Ok(val) => return Ok(val),
+                Err(err) => {
+                    if request.tries == request.max_tries {
+                        return Err(err.into())
+                    } else {
+                        continue;
+                    }
+                }
+            }
         }
 
-        todo!("Implement retries")
+        return Err(crate::Error::MaxTries)
     }
 }

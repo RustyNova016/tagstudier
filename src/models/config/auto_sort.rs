@@ -1,3 +1,4 @@
+use core::future::ready;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -13,11 +14,16 @@ use streamies::TryStreamies;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tagstudio_db::models::library;
+use tagstudio_db::query::Queryfragments;
+use tagstudio_db::query::eq_tag::EqTag;
+use tracing::instrument;
 use tracing::warn;
 
 use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::exts::path::PathExt;
+use crate::pg_counted;
+use crate::pg_inc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AutosortRules {
@@ -36,19 +42,16 @@ impl AutosortRules {
         toml::from_str(&data).context("Couldn't parse the autosort config file")
     }
 
+    #[instrument(skip(lib), fields(indicatif.pb_show = tracing::field::Empty))]
     pub async fn apply(&self, lib: &Library) -> ColEyre {
-        let conn = &mut *lib.db.get().await?;
+        pg_counted!(self.rules.len(), "Processing rules");
 
-        let _entry_stream = Entry::stream_entries(conn)
-            .map_ok(|entry| self.move_entry(lib, entry))
-            .map_err(|err| {
-                Err::<(), _>(err)
-                    .context("Couldn't stream entries")
-                    .unwrap_err()
-            })
-            .try_buffer_unordered(8)
-            .try_collect_vec()
-            .await?;
+        let mut black_list = Vec::new();
+        for rule in &self.rules {
+            let processed = rule.apply_rule(lib, &black_list).await?;
+            black_list.extend(processed);
+            pg_inc!();
+        }
 
         Ok(())
     }
@@ -92,6 +95,10 @@ impl AutosortRule {
         let target = self.target_path(lib);
         let dest = target.join(&entry.filename);
 
+        if dest == entry.get_global_path(&mut *lib.db.get().await?).await? {
+            return Ok(true);
+        }
+
         target.create_directory_if_not_exist()?;
         match entry
             .move_file_from_canon_path(&mut *lib.db.get().await?, &dest)
@@ -100,8 +107,9 @@ impl AutosortRule {
             Ok(_) => {}
             Err(tagstudio_db::Error::PathNotInFolder) => {
                 warn!(
-                    "Tried to move entry {} outside of its parent folder. This is not currently supported. No changes have been done",
-                    entry.id
+                    "Tried to move entry {}, to {}, which outside of its parent folder. This is not currently supported. No changes have been done",
+                    entry.id,
+                    dest.display()
                 )
             }
             Err(tagstudio_db::Error::DestinationOccupied(to)) => {
@@ -117,6 +125,78 @@ impl AutosortRule {
         }
 
         Ok(true)
+    }
+
+    /// Move the entry to this rule's path. It doesn't actually check if it the entry match this rule, but check if it can move it there nonetheless
+    ///
+    /// If the entry has been moved, returns true
+    async fn move_entry_unchecked(&self, lib: &Library, entry: &mut Entry) -> ColEyreVal<bool> {
+        let target = self.target_path(lib);
+        let dest = target.join(&entry.filename);
+
+        if dest == entry.get_global_path(&mut *lib.db.get().await?).await? {
+            return Ok(true);
+        }
+
+        target.create_directory_if_not_exist()?;
+        match entry
+            .move_file_from_canon_path(&mut *lib.db.get().await?, &dest)
+            .await
+        {
+            Ok(_) => {}
+            Err(tagstudio_db::Error::PathNotInFolder) => {
+                warn!(
+                    "Tried to move entry {}, to {}, which outside of its parent folder. This is not currently supported. No changes have been done",
+                    entry.id,
+                    dest.display()
+                )
+            }
+            Err(tagstudio_db::Error::DestinationOccupied(to)) => {
+                warn!(
+                    "Tried to move entry {} to `{}`, but the destination is already occupied. No changes have been done",
+                    entry.id,
+                    to.display()
+                )
+            }
+            Err(err) => Err(err).with_context(|| {
+                format!("When moving the entry {} to {}", entry.id, dest.display())
+            })?,
+        }
+
+        Ok(true)
+    }
+
+    pub async fn apply_rule(&self, lib: &Library, black_list: &Vec<i64>) -> ColEyreVal<Vec<i64>> {
+        let mut tags = self.tags.clone();
+        let Some(mut search) = tags
+            .pop()
+            .map(|tag| Queryfragments::EqTag(EqTag::from(tag)))
+        else {
+            return Ok(Vec::new());
+        };
+
+        for tag in tags {
+            search = search.and(EqTag::from(tag).into())
+        }
+
+        let sql = search.as_sql();
+        let query = sqlx::query_as(&sql);
+        let query = search.bind(query);
+
+        let entries = query.fetch_all(&mut *lib.db.get().await?).await?;
+        let mut entries_moved = Vec::new();
+
+        for mut entry in entries {
+            if black_list.contains(&entry.id) {
+                continue;
+            }
+
+            if self.move_entry_unchecked(lib, &mut entry).await? {
+                entries_moved.push(entry.id);
+            }
+        }
+
+        Ok(entries_moved)
     }
 
     pub fn target_path(&self, lib: &Library) -> PathBuf {

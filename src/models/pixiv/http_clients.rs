@@ -107,6 +107,6 @@ pub static PIXIV_RATE_LIMIT: LazyLock<
     Arc<RateLimiter<NotKeyed, InMemoryState, clock::DefaultClock, NoOpMiddleware>>,
 > = LazyLock::new(|| {
     let quota =
-        Quota::per_minute(NonZeroU32::new(12).unwrap()).allow_burst(NonZeroU32::new(1).unwrap());
+        Quota::per_minute(NonZeroU32::new(12).unwrap()).allow_burst(NonZeroU32::new(3).unwrap());
     Arc::new(RateLimiter::direct(quota))
 });

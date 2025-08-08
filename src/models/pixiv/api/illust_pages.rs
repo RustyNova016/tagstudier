@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::path::PathBuf;
+use std::time::Instant;
 
 use chrono::Utc;
 use serde::Deserialize;
@@ -42,6 +43,8 @@ impl IllustPage {
         pixiv_downloads.join(Self::filename(illust_id, page))
     }
 
+
+    /// Download the image and save it to the download folder
     pub async fn download(
         &self,
         lib: &Library,
@@ -67,17 +70,24 @@ impl IllustPage {
         // Then fetch the image
         PIXIV_RATE_LIMIT.until_ready().await;
         info!("[Image download] Downloading image: {url}");
+        let now = Instant::now();
         let img_bytes = IPXIM_HTTP_CLIENT.get(url).send().await?.bytes().await?;
 
         // Save in a task.
         let moved_path = file_path.clone();
-        tokio::spawn(async move {
-            save_image_bytes(&img_bytes, &moved_path)
-        }).await??;
+        tokio::spawn(async move { save_image_bytes(&img_bytes, &moved_path) }).await??;
+
+        let after = Instant::now();
+        info!(
+            "[Image download] Saved image `{}` in {} secs",
+            Self::filename(illust_id, page),
+            (after - now).as_secs()
+        );
 
         Ok(Some(file_path))
     }
 
+    /// Add an entry for the file
     async fn add_downloaded_file_entry(
         lib: &Library,
         illust_id: u64,
@@ -107,6 +117,7 @@ impl IllustPage {
         Ok(entries)
     }
 
+    /// Download the image and create its entry.
     pub async fn download_and_insert(
         &self,
         lib: &Library,
