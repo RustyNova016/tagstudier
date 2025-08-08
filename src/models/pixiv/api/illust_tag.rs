@@ -1,6 +1,7 @@
 use core::future::ready;
 
 use futures::TryStreamExt;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use tagstudio_db::Entry;
@@ -62,6 +63,7 @@ impl IllustTagsTags {
         }
 
         if !tags.is_empty() {
+            let tags = tags.into_iter().unique_by(|t| t.id).collect_vec();
             let mut trans = conn.begin().await?;
             for tag in &tags {
                 self.update_tag(&mut trans, tag).await?
