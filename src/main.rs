@@ -18,13 +18,13 @@ pub(crate) type ColEyreVal<T> = color_eyre::Result<T>;
 pub(crate) type ColEyre = color_eyre::Result<()>;
 
 #[tokio::main]
-async fn main() -> color_eyre::Result<()> {
+async fn main() -> ColEyre {
     color_eyre::install()?;
     println!("Hello, world!");
     let cli = Cli::parse();
     let _worker_guard = init_tracer(&cli);
 
-    cli.run().await;
+    cli.run().await?;
 
     Ok(())
 }

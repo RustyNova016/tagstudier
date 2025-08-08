@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::Utc;
@@ -7,6 +8,7 @@ use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tracing::info;
 
+use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::exts::path::PathExt as _;
 use crate::exts::tagstudio_db_ext::library::LibraryExt;
@@ -67,9 +69,11 @@ impl IllustPage {
         info!("[Image download] Downloading image: {url}");
         let img_bytes = IPXIM_HTTP_CLIENT.get(url).send().await?.bytes().await?;
 
-        let image = image::load_from_memory(&img_bytes)?;
-        file_path.create_file_if_not_exist()?;
-        image.save(&file_path)?;
+        // Save in a task.
+        let moved_path = file_path.clone();
+        tokio::spawn(async move {
+            save_image_bytes(&img_bytes, &moved_path)
+        }).await??;
 
         Ok(Some(file_path))
     }
@@ -113,4 +117,11 @@ impl IllustPage {
         self.download(lib, illust_id, page, overwrite_file).await?;
         Self::add_downloaded_file_entry(lib, illust_id, page).await
     }
+}
+
+fn save_image_bytes(img_bytes: &[u8], file_path: &Path) -> ColEyre {
+    let image = image::load_from_memory(&img_bytes)?;
+    file_path.create_file_if_not_exist()?;
+    image.save(&file_path)?;
+    Ok(())
 }

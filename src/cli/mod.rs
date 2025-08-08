@@ -1,3 +1,4 @@
+pub mod autosort;
 pub mod download;
 pub mod download_bookmarks;
 pub mod link_urls;
@@ -10,6 +11,7 @@ use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
+use crate::cli::autosort::AutosortCommand;
 use crate::cli::download::DownloadCommand;
 use crate::cli::download_bookmarks::DownloadBookmarksCommand;
 use crate::cli::link_urls::LinkUrlsCommand;
@@ -36,7 +38,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub async fn run(&self) {
+    pub async fn run(&self) -> crate::ColEyre {
         // Invoked as: `$ my-app --markdown-help`
         // if self.markdown_help {
         //     clap_markdown::print_help_markdown::<Self>();
@@ -50,8 +52,10 @@ impl Cli {
         // }
 
         if let Some(command) = &self.command {
-            command.run().await.unwrap();
+            command.run().await?;
         }
+
+        Ok(())
     }
 
     // fn print_completions<G: Generator>(gene: G, cmd: &mut Command) {
@@ -61,6 +65,7 @@ impl Cli {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
+    Autosort(AutosortCommand),
     Download(DownloadCommand),
     DownloadBookmarks(DownloadBookmarksCommand),
     LinkUrls(LinkUrlsCommand),
@@ -73,6 +78,7 @@ pub enum Commands {
 impl Commands {
     pub async fn run(&self) -> crate::ColEyre {
         match self {
+            Self::Autosort(val) => val.run().await?,
             Self::Download(val) => val.run().await?,
             Self::DownloadBookmarks(val) => val.run().await?,
             Self::LinkUrls(val) => val.run().await,
