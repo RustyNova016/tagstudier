@@ -1,3 +1,4 @@
+pub mod auto_sort;
 use serde::Deserialize;
 use serde::Serialize;
 
