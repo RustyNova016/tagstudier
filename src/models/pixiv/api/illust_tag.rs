@@ -8,6 +8,7 @@ use tagstudio_db::Entry;
 use tagstudio_db::models::tag::Tag;
 use tagstudio_db::sqlx::Acquire as _;
 
+use crate::exts::sqlx_ext::AcquireWrite;
 use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::models::pixiv::special_tags::PIXIV_NO_TAG_DATA_UPDATE;
@@ -34,7 +35,7 @@ pub struct IllustTagsTags {
 
 impl IllustTagsTags {
     pub async fn add_to_entry(&self, conn: &mut sqlx::SqliteConnection, entry: &Entry) -> ColEyre {
-        let mut trans = conn.begin().await?;
+        let mut trans = conn.begin_write().await?;
 
         // Check if the update is authorized
         if entry.has_tag(&mut trans, PIXIV_NO_TAG_UPDATE).await? {
@@ -108,7 +109,7 @@ impl IllustTagsTags {
     }
 
     pub async fn update_tag(&self, conn: &mut sqlx::SqliteConnection, tag: &Tag) -> ColEyreVal<()> {
-        let mut trans = conn.begin().await?;
+        let mut trans = conn.begin_write().await?;
 
         if tag
             .get_parents(&mut trans)

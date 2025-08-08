@@ -2,7 +2,6 @@ use std::env::current_dir;
 
 use clap::Parser;
 use color_eyre::eyre::Context as _;
-use futures::Stream;
 use futures::StreamExt;
 use futures::TryStreamExt as _;
 use futures::pin_mut;
@@ -11,9 +10,7 @@ use streamies::Streamies;
 use streamies::TryStreamies;
 use tagstudio_db::Library;
 
-use crate::ColEyreVal;
 use crate::models::pixiv::PixivProvider;
-use crate::models::pixiv::api::bookmark_item::BookmarkItem;
 
 /// Add links to images based on their filename
 #[derive(Parser, Debug, Clone)]
@@ -58,7 +55,7 @@ impl DownloadBookmarksCommand {
         let stream = stream
             .map_ok(async |bookmark| bookmark.download(&lib, self.overwrite_file).await)
             .extract_future_ok()
-            .buffer_unordered(1)
+            .buffer_unordered(8)
             .flatten_result_ok();
 
         pin_mut!(stream);

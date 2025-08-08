@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
-use tracing::debug;
+use tracing::info;
 
 use crate::ColEyreVal;
 use crate::exts::path::PathExt as _;
@@ -64,7 +64,7 @@ impl IllustPage {
 
         // Then fetch the image
         PIXIV_RATE_LIMIT.until_ready().await;
-        debug!("Fetching image: {url}");
+        info!("[Image download] Downloading image: {url}");
         let img_bytes = IPXIM_HTTP_CLIENT.get(url).send().await?.bytes().await?;
 
         let image = image::load_from_memory(&img_bytes)?;

@@ -13,6 +13,7 @@ use tagstudio_db::query::Queryfragments;
 use tagstudio_db::query::eq_field::EqField;
 use tagstudio_db::query::eq_field::FieldValue;
 
+use crate::exts::sqlx_ext::AcquireWrite;
 use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::constants::AI_TAG;
@@ -57,7 +58,7 @@ impl IllustBody {
         conn: &mut sqlx::SqliteConnection,
         entry: &Entry,
     ) -> ColEyre {
-        let mut trans = conn.begin().await?;
+        let mut trans = conn.begin_write().await?;
 
         // Check if the update is authorized
         if entry.has_tag(&mut trans, PIXIV_NO_DATA_UPDATE).await? {
@@ -149,7 +150,7 @@ impl IllustBody {
                 page.download_and_insert(lib, id, nb.try_into().unwrap(), overwrite_file)
                     .await
             })
-            .buffer_unordered(1)
+            .buffer_unordered(8)
             .map_ok(stream::iter)
             .flatten_ok()
             .map_ok(async |entry| {
