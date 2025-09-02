@@ -3108,6 +3108,7 @@ dependencies = [
  "futures",
  "governor",
  "image",
+ "indicatif",
  "itertools 0.14.0",
  "owo-colors",
  "regex",
@@ -3128,6 +3129,7 @@ dependencies = [
  "tracing-indicatif",
  "tracing-subscriber",
  "tracing-test",
+ "use",
 ]
 
 [[package]]
@@ -3137,6 +3139,7 @@ dependencies = [
  "chrono",
  "deadpool",
  "futures",
+ "serde_json",
  "sqlx",
  "streamies",
  "thiserror 2.0.12",
@@ -3676,6 +3679,12 @@ dependencies = [
  "idna",
  "percent-encoding",
 ]
+
+[[package]]
+name = "use"
+version = "0.0.1-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f916b8b6102de89f9999988ddc8e9bd0f119a8344e06bb19b0b03fb655769035"
 
 [[package]]
 name = "utf8_iter"
