@@ -43,6 +43,8 @@ impl IllustPage {
         pixiv_downloads.join(Self::filename(illust_id, page))
     }
 
+
+    /// Download the image and save it to the download folder
     pub async fn download(
         &self,
         lib: &Library,
@@ -85,6 +87,7 @@ impl IllustPage {
         Ok(Some(file_path))
     }
 
+    /// Add an entry for the file
     async fn add_downloaded_file_entry(
         lib: &Library,
         illust_id: u64,
@@ -114,6 +117,7 @@ impl IllustPage {
         Ok(entries)
     }
 
+    /// Download the image and create its entry.
     pub async fn download_and_insert(
         &self,
         lib: &Library,

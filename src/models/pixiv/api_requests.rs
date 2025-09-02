@@ -53,11 +53,11 @@ impl PixivProvider {
             let mut total = 1;
 
             while offset < total {
-                let res = Self::fetch_bookmarks(user_id, offset, 48, hidden).await?;
+                let res = Self::fetch_bookmarks(user_id, offset, 100, hidden).await?;
                 let body = res.body().context("Reading response")?.as_object().unwrap();
 
                 total = body.total;
-                offset += 48;
+                offset += 100;
 
                 for item in &body.works {
                     emitter.emit(item.to_owned()).await;

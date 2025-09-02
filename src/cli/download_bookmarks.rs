@@ -55,7 +55,7 @@ impl DownloadBookmarksCommand {
         let stream = stream
             .map_ok(async |bookmark| bookmark.download(&lib, self.overwrite_file).await)
             .extract_future_ok()
-            .buffer_unordered(8)
+            .buffer_unordered(20)
             .flatten_result_ok();
 
         pin_mut!(stream);

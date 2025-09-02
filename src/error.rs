@@ -20,4 +20,7 @@ pub enum Error {
 
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+
+    #[error("Max tries for request")]
+    MaxTries,
 }

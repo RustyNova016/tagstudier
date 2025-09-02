@@ -3,8 +3,8 @@ use core::fmt::Display;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::ColEyreVal;
 use crate::models::pixiv::PixivProvider;
+use crate::ColEyreVal;
 
 impl PixivProvider {
     pub fn parse_illust_id(url: &str) -> Option<&str> {
@@ -21,6 +21,7 @@ impl PixivProvider {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(untagged)]
 pub enum StringOrNum {
     String(String),
     Number(u64),
