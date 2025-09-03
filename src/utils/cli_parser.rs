@@ -1,5 +1,4 @@
 use core::str::FromStr;
-use std::path::Path;
 use std::path::PathBuf;
 
 use color_eyre::eyre::Context;
@@ -39,5 +38,8 @@ pub async fn parse_tag_name(conn: &mut SqliteConnection, tag: &str) -> Result<Ta
 
 /// Parse a cli input into a canonical pathbuf
 pub fn cli_parse_path_buf(data: &str) -> ColEyreVal<PathBuf> {
-    PathBuf::from_str(data).unwrap().canonicalize().context(format!("Couldn't find path `{data}`. Make sure it exists"))
+    PathBuf::from_str(data)
+        .unwrap()
+        .canonicalize()
+        .context(format!("Couldn't find path `{data}`. Make sure it exists"))
 }

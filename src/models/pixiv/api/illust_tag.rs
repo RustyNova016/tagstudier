@@ -8,9 +8,9 @@ use tagstudio_db::Entry;
 use tagstudio_db::models::tag::Tag;
 use tagstudio_db::sqlx::Acquire as _;
 
-use crate::exts::sqlx_ext::AcquireWrite;
 use crate::ColEyre;
 use crate::ColEyreVal;
+use crate::exts::sqlx_ext::AcquireWrite;
 use crate::models::pixiv::special_tags::PIXIV_NO_TAG_DATA_UPDATE;
 use crate::models::pixiv::special_tags::PIXIV_NO_TAG_UPDATE;
 use crate::models::pixiv::special_tags::PIXIV_TAG_IMPORT;
