@@ -17,7 +17,7 @@ pub struct MergeTagCommand {
 
 impl MergeTagCommand {
     pub async fn run(&self) -> ColEyre {
-        let lib = CLI_DATA.read().unwrap().get_library().await?;
+        let lib = CLI_DATA.read().await.get_library().await?;
         let conn = &mut *lib
             .db
             .get()
