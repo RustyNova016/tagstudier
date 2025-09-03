@@ -43,7 +43,6 @@ impl IllustPage {
         pixiv_downloads.join(Self::filename(illust_id, page))
     }
 
-
     /// Download the image and save it to the download folder
     pub async fn download(
         &self,

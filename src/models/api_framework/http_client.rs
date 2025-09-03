@@ -32,7 +32,7 @@ impl HTTPClient {
                 Ok(val) => return Ok(val),
                 Err(err) => {
                     if request.tries == request.max_tries {
-                        return Err(err.into())
+                        return Err(err.into());
                     } else {
                         continue;
                     }
@@ -40,6 +40,6 @@ impl HTTPClient {
             }
         }
 
-        return Err(crate::Error::MaxTries)
+        return Err(crate::Error::MaxTries);
     }
 }

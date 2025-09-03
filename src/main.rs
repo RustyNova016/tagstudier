@@ -4,6 +4,7 @@ use crate::cli::Cli;
 pub(crate) use crate::error::Error;
 use crate::interface::tracing::init_tracer;
 
+#[cfg(feature = "unstable")]
 pub(crate) mod apis;
 pub(crate) mod cli;
 pub(crate) mod constants;
@@ -20,7 +21,6 @@ pub(crate) type ColEyre = color_eyre::Result<()>;
 #[tokio::main]
 async fn main() -> ColEyre {
     color_eyre::install()?;
-    println!("Hello, world!");
     let cli = Cli::parse();
     let _worker_guard = init_tracer(&cli);
 

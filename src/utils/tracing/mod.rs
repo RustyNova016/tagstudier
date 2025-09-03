@@ -3,13 +3,12 @@ use std::sync::LazyLock;
 use indicatif::ProgressState;
 use tracing_indicatif::style::ProgressStyle;
 
-
-pub static SPINNER_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
-    ProgressStyle::with_template("{span_child_prefix}{spinner} [{msg}] | {elapsed_subsec}")
-        .unwrap()
-        .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
-        .with_key("elapsed_subsec", elapsed_subsec)
-});
+// pub static SPINNER_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
+//     ProgressStyle::with_template("{span_child_prefix}{spinner} [{msg}] | {elapsed_subsec}")
+//         .unwrap()
+//         .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
+//         .with_key("elapsed_subsec", elapsed_subsec)
+// });
 
 pub static COUNT_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
     ProgressStyle::with_template(
@@ -26,21 +25,21 @@ fn elapsed_subsec(state: &ProgressState, writer: &mut dyn std::fmt::Write) {
     let _ = writer.write_str(&format!("{seconds}.{sub_seconds}s"));
 }
 
-#[macro_export]
-macro_rules! pg_spinner {
-    ($($arg:tt)*) => {
-        {
-            use tracing::Span;
-            use tuillez::tracing_indicatif::span_ext::IndicatifSpanExt as _;
-            use tuillez::SPINNER_STYLE;
+// #[macro_export]
+// macro_rules! pg_spinner {
+//     ($($arg:tt)*) => {
+//         {
+//             use tracing::Span;
+//             use tuillez::tracing_indicatif::span_ext::IndicatifSpanExt as _;
+//             use tuillez::SPINNER_STYLE;
 
-            Span::current().pb_set_message(&format!($($arg)*));
-            Span::current().pb_set_style(
-                &SPINNER_STYLE
-            );
-        }
-    }
-}
+//             Span::current().pb_set_message(&format!($($arg)*));
+//             Span::current().pb_set_style(
+//                 &SPINNER_STYLE
+//             );
+//         }
+//     }
+// }
 
 #[macro_export]
 macro_rules! pg_counted {

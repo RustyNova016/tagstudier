@@ -3,8 +3,8 @@ use core::fmt::Display;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::models::pixiv::PixivProvider;
 use crate::ColEyreVal;
+use crate::models::pixiv::PixivProvider;
 
 impl PixivProvider {
     pub fn parse_illust_id(url: &str) -> Option<&str> {
