@@ -6,7 +6,6 @@ pub mod download;
 pub mod download_bookmarks;
 #[cfg(feature = "unstable")]
 pub mod link_urls;
-#[cfg(feature = "unstable")]
 pub mod merge_tags;
 pub mod mv;
 #[cfg(feature = "unstable")]
@@ -26,7 +25,6 @@ use crate::cli::download::DownloadCommand;
 use crate::cli::download_bookmarks::DownloadBookmarksCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::link_urls::LinkUrlsCommand;
-#[cfg(feature = "unstable")]
 use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
 #[cfg(feature = "unstable")]
@@ -102,7 +100,6 @@ pub enum Commands {
     DownloadBookmarks(DownloadBookmarksCommand),
     #[cfg(feature = "unstable")]
     LinkUrls(LinkUrlsCommand),
-    #[cfg(feature = "unstable")]
     MergeTags(MergeTagCommand),
     MV(MVCommand),
     #[cfg(feature = "unstable")]
@@ -122,8 +119,7 @@ impl Commands {
             Self::DownloadBookmarks(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::LinkUrls(val) => val.run().await,
-            #[cfg(feature = "unstable")]
-            Self::MergeTags(val) => val.run().await,
+            Self::MergeTags(val) => val.run().await?,
             Self::MV(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::RenameTag(val) => val.run().await,
