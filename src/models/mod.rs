@@ -5,6 +5,7 @@ use governor::state::InMemoryState;
 use governor::state::NotKeyed;
 
 pub mod api_framework;
+pub mod cli_utils;
 pub mod config;
 pub mod pixiv;
 pub mod tag_providers;

@@ -1,5 +1,12 @@
+use core::str::FromStr;
+use std::path::Path;
+use std::path::PathBuf;
+
+use color_eyre::eyre::Context;
 use tagstudio_db::models::tag::Tag;
 use tagstudio_db::sqlx::SqliteConnection;
+
+use crate::ColEyreVal;
 
 pub async fn parse_tag_name(conn: &mut SqliteConnection, tag: &str) -> Result<Tag, crate::Error> {
     if tag.starts_with("tag_id:") {
@@ -28,4 +35,9 @@ pub async fn parse_tag_name(conn: &mut SqliteConnection, tag: &str) -> Result<Ta
 
     tags.pop()
         .ok_or_else(|| crate::Error::CliInput(tag.to_string(), "Tag not found".to_string()))
+}
+
+/// Parse a cli input into a canonical pathbuf
+pub fn cli_parse_path_buf(data: &str) -> ColEyreVal<PathBuf> {
+    PathBuf::from_str(data).unwrap().canonicalize().context(format!("Couldn't find path `{data}`. Make sure it exists"))
 }

@@ -19,6 +19,7 @@ use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
 use crate::cli::rename_tag::RenameTagCommand;
 use crate::cli::tag_import::TagImportCommand;
+use crate::models::cli_utils::cli_data::CLI_DATA;
 
 /// Tools for TagStudio
 #[derive(Parser, Debug, Clone)]
@@ -29,6 +30,10 @@ pub struct Cli {
 
     #[command(flatten)]
     pub verbose: Verbosity<InfoLevel>,
+
+    /// The path to the TagStudio library. If left blank, it will try to find a library folder in the parent folder recursively
+    #[clap(short, long)]
+    pub library: Option<String>,
 
     // If provided, outputs the completion file for given shell
     // #[arg(long = "generate", value_enum)]
@@ -51,11 +56,21 @@ impl Cli {
         //     return Ok(false);
         // }
 
+        self.load_cli_data();
+
         if let Some(command) = &self.command {
             command.run().await?;
         }
 
         Ok(())
+    }
+
+    fn load_cli_data(&self) {
+        let mut data = CLI_DATA.write().unwrap();
+
+        if let Some(lib) = &self.library {
+            data.set_lib_path(lib.to_owned());
+        }
     }
 
     // fn print_completions<G: Generator>(gene: G, cmd: &mut Command) {
@@ -83,7 +98,7 @@ impl Commands {
             Self::DownloadBookmarks(val) => val.run().await?,
             Self::LinkUrls(val) => val.run().await,
             Self::MergeTags(val) => val.run().await,
-            Self::MV(val) => val.run().await,
+            Self::MV(val) => val.run().await?,
             Self::RenameTag(val) => val.run().await,
             Self::TagImport(val) => val.run().await?,
         }

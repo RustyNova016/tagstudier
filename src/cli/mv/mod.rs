@@ -1,19 +1,19 @@
-use std::env::current_dir;
-use std::path::PathBuf;
-
 use clap::Parser;
+use color_eyre::eyre::Context;
 use tagstudio_db::models::entry::Entry;
-use tagstudio_db::models::library::Library;
 use tracing::info;
+
+use crate::models::cli_utils::cli_data::CLI_DATA;
+use crate::utils::cli_parser::cli_parse_path_buf;
 
 /// Move a file within the library, while keeping all the metadata attached
 #[derive(Parser, Debug, Clone)]
 pub struct MVCommand {
     /// The file to move
-    pub from: PathBuf,
+    pub from: String,
 
     /// Where to move it
-    pub to: PathBuf,
+    pub to: String,
 
     /// Add this flag to not make changes, and instead print them out
     #[clap(short, long)]
@@ -21,17 +21,16 @@ pub struct MVCommand {
 }
 
 impl MVCommand {
-    pub async fn run(&self) {
-        let current_dir = current_dir().expect("Couldn't get current working directory");
-        let lib = Library::try_new(current_dir.clone()).expect("Couldn't get the root library");
+    pub async fn run(&self) -> crate::ColEyre {
+        let lib = CLI_DATA.read().unwrap().get_library().await?;
         let conn = &mut *lib
             .db
             .get()
             .await
             .expect("Couldn't open a new connection to the library database");
 
-        let from = self.from.canonicalize().expect("Invalid `from` path");
-        let to = self.to.canonicalize().expect("Invalid `to` path");
+        let from = cli_parse_path_buf(&self.from).context("Invalid `from` path")?;
+        let to = cli_parse_path_buf(&self.to).context("Invalid `to` path")?;
 
         let entries = Entry::find_by_cannon_path(conn, &from)
             .await
@@ -49,6 +48,7 @@ impl MVCommand {
             i += 1;
         }
 
-        info!("Affected {i} entries")
+        info!("Affected {i} entries");
+        Ok(())
     }
 }
