@@ -1,5 +1,4 @@
 use sqlx::Acquire;
-use sqlx::Executor;
 use sqlx::SqliteConnection;
 use sqlx::Transaction;
 
