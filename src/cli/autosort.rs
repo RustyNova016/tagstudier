@@ -9,7 +9,7 @@ pub struct AutosortCommand {}
 
 impl AutosortCommand {
     pub async fn run(&self) -> crate::ColEyre {
-        let lib = CLI_DATA.read().unwrap().get_library().await?;
+        let lib = CLI_DATA.read().await.get_library().await?;
 
         let auto = AutosortRules::load(&lib)?;
         auto.apply(&lib).await?;

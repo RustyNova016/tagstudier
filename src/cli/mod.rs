@@ -68,7 +68,7 @@ impl Cli {
         //     return Ok(false);
         // }
 
-        self.load_cli_data();
+        self.load_cli_data().await;
 
         if let Some(command) = &self.command {
             command.run().await?;
@@ -77,8 +77,8 @@ impl Cli {
         Ok(())
     }
 
-    fn load_cli_data(&self) {
-        let mut data = CLI_DATA.write().unwrap();
+    async fn load_cli_data(&self) {
+        let mut data = CLI_DATA.write().await;
 
         if let Some(lib) = &self.library {
             data.set_lib_path(lib.to_owned());

@@ -2,10 +2,10 @@ use core::str::FromStr as _;
 use std::env::current_dir;
 use std::path::PathBuf;
 use std::sync::LazyLock;
-use std::sync::RwLock;
 
 use color_eyre::eyre::Context as _;
 use tagstudio_db::Library;
+use tokio::sync::RwLock;
 
 use crate::ColEyreVal;
 
@@ -24,7 +24,7 @@ impl CliData {
     pub async fn get_library(&self) -> ColEyreVal<Library> {
         let lib_path = match &self.lib_path {
             Some(path) => {
-                let path = PathBuf::from_str(&path).unwrap();
+                let path = PathBuf::from_str(path).unwrap();
                 if path.is_absolute() {
                     path
                 } else {
@@ -34,6 +34,6 @@ impl CliData {
             None => current_dir().context("Couldn't get current working directory")?,
         };
 
-        Ok(Library::try_new(lib_path).context("Couldn't get the root library")?)
+        Library::try_new(lib_path).context("Couldn't get the root library")
     }
 }
