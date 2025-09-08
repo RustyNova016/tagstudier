@@ -100,7 +100,7 @@ pub enum Commands {
     DownloadBookmarks(DownloadBookmarksCommand),
     #[cfg(feature = "unstable")]
     LinkUrls(LinkUrlsCommand),
-    ManageFoldersCommand(ManageFoldersCommand),
+    ManageFolders(ManageFoldersCommand),
     MergeTags(MergeTagCommand),
     MV(MVCommand),
     #[cfg(feature = "unstable")]
@@ -118,7 +118,7 @@ impl Commands {
             Self::DownloadBookmarks(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::LinkUrls(val) => val.run().await,
-            Self::ManageFoldersCommand(val) => val.run().await?,
+            Self::ManageFolders(val) => val.run().await?,
             Self::MergeTags(val) => val.run().await?,
             Self::MV(val) => val.run().await?,
             #[cfg(feature = "unstable")]
