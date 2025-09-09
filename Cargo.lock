@@ -3199,8 +3199,9 @@ dependencies = [
 
 [[package]]
 name = "tagstudio_db"
-version = "0.2.0"
-source = "git+https://github.com/RustyNova016/tagstudio_db#eac11c81a9c72e45b3b0af35d728742fd4f11abe"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d85243aa623fb00b6b29f2fcd2a6d801618938a2271f0ecd9276effd075303a"
 dependencies = [
  "chrono",
  "deadpool",
