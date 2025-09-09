@@ -4,13 +4,16 @@ use color_eyre::eyre::Context as _;
 use color_eyre::eyre::eyre;
 use serde::Deserialize;
 use serde::Serialize;
+use sqlx::Acquire;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tagstudio_db::query::Queryfragments;
 use tracing::warn;
 
+use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::exts::path::PathExt as _;
+use crate::utils::cli_parser::parse_tag_name;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FolderRule {
@@ -18,6 +21,11 @@ pub struct FolderRule {
 
     #[serde(default)]
     sorting: String,
+
+    #[serde(default)]
+    add_tags: Vec<String>,
+    // #[serde(default)]
+    // remove_tags: Vec<String>,
 }
 
 impl FolderRule {
@@ -100,5 +108,32 @@ impl FolderRule {
         let query = search.bind(query);
 
         Ok(query.fetch_all(&mut *lib.db.get().await?).await?)
+    }
+
+    pub async fn tag_entries(&self, lib: &Library) -> ColEyre {
+        let conn = &mut *lib.db.get().await?;
+        let mut trans = conn.begin().await?;
+
+        for tag in &self.add_tags {
+            let tag = parse_tag_name(&mut *trans, &tag).await?;
+
+            sqlx::query!(
+                "
+            INSERT INTO
+                `tag_entries` (tag_id, entry_id)
+            SELECT
+                entries.id AS entry_id, $1 AS tag_id
+            FROM
+                entries
+            WHERE
+                REPLACE(`entries`.`path`, `entries`.`filename`, '') = $2",
+                tag.id,
+                self.path
+            )
+            .execute(&mut *trans)
+            .await?;
+        }
+
+        Ok(())
     }
 }
