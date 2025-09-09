@@ -26,13 +26,14 @@ clap = { version = "4.5.41", features = [
 ] }
 clap_complete = "4.5.55"
 clap-verbosity-flag = { version = "3.0.3", default-features = false, features = ["tracing"] }
-#clap-markdown = "0.1.5"
+clap-markdown = "0.1.5"
 
 # Tracing
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 tracing-appender = "0.2.3"
 tracing-indicatif = "0.3.11"
+indicatif = "0.18.0"
 owo-colors = "4.2.1"
 
 # Others
@@ -50,7 +51,6 @@ sorted-vec = "0.8.7"
 async-fn-stream = "0.2.2"
 toml = "0.9.5"
 retry = "2.1.0"
-indicatif = "0.18.0"
 
 [features]
 default = []

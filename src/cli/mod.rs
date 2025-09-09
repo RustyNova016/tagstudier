@@ -1,6 +1,4 @@
 #[cfg(feature = "unstable")]
-pub mod autosort;
-#[cfg(feature = "unstable")]
 pub mod download;
 #[cfg(feature = "unstable")]
 pub mod download_bookmarks;
@@ -59,10 +57,10 @@ pub struct Cli {
 impl Cli {
     pub async fn run(&self) -> crate::ColEyre {
         // Invoked as: `$ my-app --markdown-help`
-        // if self.markdown_help {
-        //     clap_markdown::print_help_markdown::<Self>();
-        //     return Ok(false);
-        // }
+        if self.markdown_help {
+            clap_markdown::print_help_markdown::<Self>();
+            return Ok(());
+        }
 
         // if let Some(generator) = self.generator {
         //     let mut cmd = Self::command();

@@ -1,0 +1,32 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: local
+    hooks:
+    - id: Fmt
+      name: fmt
+      entry: cargo fmt
+      language: system
+      types: [rust]
+      pass_filenames: false
+
+    - id: Sqlx Prepare
+      name: Sqlx Prepare
+      entry: cargo sqlx prepare
+      language: system
+      types: [rust]
+      pass_filenames: false
+    
+    - id: Generate help
+      name: Generate help - Add files
+      entry: sh ./scripts/generate_help.sh
+      language: system
+      types: [rust]
+      pass_filenames: false
+
+    - id: Clippy
+      name: clippy
+      entry: cargo clippy
+      language: system
+      types: [rust]
+      pass_filenames: false
