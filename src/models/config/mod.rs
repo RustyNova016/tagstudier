@@ -1,5 +1,4 @@
-#[cfg(feature = "unstable")]
-pub mod auto_sort;
+pub mod folders;
 #[cfg(feature = "unstable")]
 use serde::Deserialize;
 #[cfg(feature = "unstable")]

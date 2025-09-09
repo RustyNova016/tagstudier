@@ -1,0 +1,109 @@
+name: release
+on:
+  release:
+    types: [published]     
+      
+jobs:
+      get-tag:
+            name: Get Release Tag
+            runs-on: ubuntu-latest
+            outputs:
+                  tag: ${{ steps.get-latest-tag.outputs.tag }}
+            steps:
+                  - uses: actions/checkout@v5
+                  
+                  - uses: actions-ecosystem/action-get-latest-tag@v1
+                    id: get-latest-tag
+
+      release-linux:
+            env: 
+              SQLX_OFFLINE: true
+            name: Create Release Linux
+            runs-on: ubuntu-22.04 # Prevent building on the latest GLIBC. There's not really a need to, and Debian 12 users are still behind
+            strategy:
+                  fail-fast: false
+            needs: get-tag
+            steps:
+                  - uses: actions/checkout@v5
+
+                  - name: Install toolchain
+                    uses: actions-rs/toolchain@v1
+                    with:
+                        toolchain: stable
+                        override: true
+
+                  - name: Build
+                    run: cargo build --all --release
+
+                  - name: Rename
+                    run: mv target/release/tagstudier target/release/tagstudier-linux
+        
+                  - name: Release
+                    uses: softprops/action-gh-release@v2
+                    with:
+                      files: target/release/tagstudier-linux
+                      tag_name: ${{needs.get-tag.outputs.tag}}
+                    env:
+                      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      release-windows:
+            env: 
+              SQLX_OFFLINE: true
+            name: Create Release Windows
+            runs-on: windows-latest
+            strategy:
+                  fail-fast: false
+            needs: get-tag
+            steps:
+                  - uses: actions/checkout@v5
+
+                  - name: Install toolchain
+                    uses: actions-rs/toolchain@v1
+                    with:
+                      toolchain: stable
+                      override: true
+
+                  - name: Build
+                    run: cargo build --all --release    
+
+                  - name: Rename
+                    run: mv target/release/tagstudier.exe target/release/tagstudier-windows.exe
+        
+                  - name: Release
+                    uses: softprops/action-gh-release@v2
+                    with:
+                         files: target/release/tagstudier-windows.exe
+                         tag_name: ${{needs.get-tag.outputs.tag}}
+                    env:
+                      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      release-macos:
+            env: 
+              SQLX_OFFLINE: true
+            name: Create Release MacOS
+            runs-on: macos-latest
+            strategy:
+                  fail-fast: false
+            needs: get-tag
+            steps:
+                  - uses: actions/checkout@v5
+
+                  - name: Install toolchain
+                    uses: actions-rs/toolchain@v1
+                    with:
+                      toolchain: stable
+                      override: true
+
+                  - name: Build
+                    run: cargo build --all --release    
+
+                  - name: Rename
+                    run: mv target/release/tagstudier target/release/tagstudier-macos
+        
+                  - name: Release
+                    uses: softprops/action-gh-release@v2
+                    with:
+                         files: target/release/tagstudier-macos
+                         tag_name: ${{needs.get-tag.outputs.tag}}
+                    env:
+                      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

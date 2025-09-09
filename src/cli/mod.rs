@@ -6,6 +6,7 @@ pub mod download;
 pub mod download_bookmarks;
 #[cfg(feature = "unstable")]
 pub mod link_urls;
+pub mod manage_folders;
 pub mod merge_tags;
 pub mod mv;
 #[cfg(feature = "unstable")]
@@ -25,6 +26,7 @@ use crate::cli::download::DownloadCommand;
 use crate::cli::download_bookmarks::DownloadBookmarksCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::link_urls::LinkUrlsCommand;
+use crate::cli::manage_folders::ManageFoldersCommand;
 use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
 #[cfg(feature = "unstable")]
@@ -93,13 +95,12 @@ impl Cli {
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
     #[cfg(feature = "unstable")]
-    Autosort(AutosortCommand),
-    #[cfg(feature = "unstable")]
     Download(DownloadCommand),
     #[cfg(feature = "unstable")]
     DownloadBookmarks(DownloadBookmarksCommand),
     #[cfg(feature = "unstable")]
     LinkUrls(LinkUrlsCommand),
+    ManageFolders(ManageFoldersCommand),
     MergeTags(MergeTagCommand),
     MV(MVCommand),
     #[cfg(feature = "unstable")]
@@ -112,13 +113,12 @@ impl Commands {
     pub async fn run(&self) -> crate::ColEyre {
         match self {
             #[cfg(feature = "unstable")]
-            Self::Autosort(val) => val.run().await?,
-            #[cfg(feature = "unstable")]
             Self::Download(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::DownloadBookmarks(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::LinkUrls(val) => val.run().await,
+            Self::ManageFolders(val) => val.run().await?,
             Self::MergeTags(val) => val.run().await?,
             Self::MV(val) => val.run().await?,
             #[cfg(feature = "unstable")]
