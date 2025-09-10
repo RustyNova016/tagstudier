@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO\n                `tag_entries` (tag_id, entry_id)\n            SELECT\n                entries.id AS entry_id, $1 AS tag_id\n            FROM\n                entries\n            WHERE\n                REPLACE(`entries`.`path`, `entries`.`filename`, '') = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "75ba3a35ebe31a1480938597952c159f7d71ec5dd573b77443dd34ea92208a75"
+}

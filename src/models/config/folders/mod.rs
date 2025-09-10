@@ -33,8 +33,14 @@ impl FolderConfig {
         toml::from_str(&data).context("Couldn't parse the autosort config file")
     }
 
+    #[instrument(skip(lib), fields(indicatif.pb_show = tracing::field::Empty))]
     pub async fn apply_folder_rules(&self, lib: &Library) -> ColEyre {
-        self.apply_folder_sorting(lib).await
+        pg_counted!(2, "Processing folder rules");
+        self.apply_folder_tagging(lib).await?;
+        pg_inc!();
+        self.apply_folder_sorting(lib).await?;
+        pg_inc!();
+        Ok(())
     }
 
     #[instrument(skip(lib), fields(indicatif.pb_show = tracing::field::Empty))]
@@ -45,6 +51,18 @@ impl FolderConfig {
         for rule in &self.folders {
             let processed = rule.sort_entries(lib, black_list.clone()).await?;
             black_list.extend(processed);
+            pg_inc!();
+        }
+
+        Ok(())
+    }
+
+    #[instrument(skip(lib), fields(indicatif.pb_show = tracing::field::Empty))]
+    async fn apply_folder_tagging(&self, lib: &Library) -> ColEyre {
+        pg_counted!(self.folders.len(), "Processing entry tagging rules");
+
+        for rule in &self.folders {
+            rule.tag_entries(lib).await?;
             pg_inc!();
         }
 
