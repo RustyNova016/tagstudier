@@ -6,7 +6,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
-use tagstudio_db::query::Queryfragments;
+use tagstudio_db::query::entry_search_query::EntrySearchQuery;
+use tagstudio_db::query::eq_any_entry_id::EqAnyEntryId;
+use tagstudio_db::query::trait_entry_filter::EntryFilter as _;
 use tracing::warn;
 
 use crate::ColEyreVal;
@@ -90,15 +92,15 @@ impl FolderRule {
         lib: &Library,
         black_list: Vec<i64>,
     ) -> ColEyreVal<Vec<Entry>> {
-        let mut search = Queryfragments::parse(&self.sorting)?;
+        let mut search = EntrySearchQuery::parse(&self.sorting)?;
 
         // Remove every item in the blacklist
-        search = search.and(Queryfragments::eq_any_entry_id(black_list).into_not());
+        search = search.and(
+            EntrySearchQuery::from(EqAnyEntryId(black_list))
+                .invert()
+                .into(),
+        );
 
-        let sql = search.as_sql();
-        let query = sqlx::query_as(&sql);
-        let query = search.bind(query);
-
-        Ok(query.fetch_all(&mut *lib.db.get().await?).await?)
+        Ok(search.fetch_all(&mut *lib.db.get().await?).await?)
     }
 }
