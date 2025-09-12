@@ -6,6 +6,7 @@ This document contains the help content for the `tagstudier` command-line progra
 
 * [`tagstudier`↴](#tagstudier)
 * [`tagstudier manage-folders`↴](#tagstudier-manage-folders)
+* [`tagstudier merge-entries`↴](#tagstudier-merge-entries)
 * [`tagstudier merge-tags`↴](#tagstudier-merge-tags)
 * [`tagstudier mv`↴](#tagstudier-mv)
 
@@ -18,6 +19,7 @@ Tools for TagStudio
 ###### **Subcommands:**
 
 * `manage-folders` — Manage folders based on simple rules
+* `merge-entries` — Merge two tags together
 * `merge-tags` — Merge two tags together
 * `mv` — Move a file within the library, while keeping all the metadata attached
 
@@ -34,6 +36,19 @@ Tools for TagStudio
 Manage folders based on simple rules
 
 **Usage:** `tagstudier manage-folders`
+
+
+
+## `tagstudier merge-entries`
+
+Merge two tags together
+
+**Usage:** `tagstudier merge-entries <ENTRY> [ENTRIES_TO_MERGE]...`
+
+###### **Arguments:**
+
+* `<ENTRY>` — The entry to merge into
+* `<ENTRIES_TO_MERGE>` — The entry(ies) to merge into the target
 
 
 
