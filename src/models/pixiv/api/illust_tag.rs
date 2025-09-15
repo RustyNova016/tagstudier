@@ -38,7 +38,7 @@ impl IllustTagsTags {
         let mut trans = conn.begin_write().await?;
 
         // Check if the update is authorized
-        if entry.has_tag(&mut trans, PIXIV_NO_TAG_UPDATE).await? {
+        if entry.match_exact_tag(&mut trans, PIXIV_NO_TAG_UPDATE).await? {
             return Ok(());
         }
 
