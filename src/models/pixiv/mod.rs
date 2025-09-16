@@ -1,3 +1,4 @@
+pub mod models;
 use color_eyre::eyre::OptionExt;
 use tagstudio_db::models::library::Library;
 
