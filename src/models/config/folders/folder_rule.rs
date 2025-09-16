@@ -95,11 +95,7 @@ impl FolderRule {
         let mut search = EntrySearchQuery::parse(&self.sorting)?;
 
         // Remove every item in the blacklist
-        search = search.and(
-            EntrySearchQuery::from(EqAnyEntryId(black_list))
-                .invert()
-                .into(),
-        );
+        search = search.and(EntrySearchQuery::from(EqAnyEntryId(black_list)).invert());
 
         Ok(search.fetch_all(&mut *lib.db.get().await?).await?)
     }
