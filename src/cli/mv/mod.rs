@@ -1,3 +1,4 @@
+use core::str::FromStr as _;
 use std::env::current_dir;
 use std::path::PathBuf;
 use core::str::FromStr as _;

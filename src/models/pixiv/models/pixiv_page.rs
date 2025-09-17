@@ -25,7 +25,7 @@ impl PixivPage {
     pub fn get_entry_search_query(&self) -> EntrySearchQuery {
         EntrySearchQuery::from(EqEntryField {
             field_type: "URL".to_string(),
-            value: FieldValue::Text(self.get_filename()),
+            value: FieldValue::Text(format!("https://www.pixiv.net/en/artworks/{}", self.id)),
         })
         .and(
             EqTagString(PIXIV_DATA_IMPORT.to_string())
