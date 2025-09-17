@@ -1,4 +1,6 @@
 #[cfg(feature = "unstable")]
+pub mod suggest_tag;
+#[cfg(feature = "unstable")]
 use governor::RateLimiter;
 #[cfg(feature = "unstable")]
 use governor::clock;

@@ -7,6 +7,9 @@ pub enum Error {
     TagstudioDb(#[from] tagstudio_db::Error),
 
     #[error(transparent)]
+    TagstudioDbSqlx(#[from] tagstudio_db::SqlxError),
+
+    #[error(transparent)]
     LibraryConnection(#[from] tagstudio_db::TSPoolError),
 
     #[error(transparent)]
