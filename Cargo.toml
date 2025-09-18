@@ -50,11 +50,13 @@ sorted-vec = "0.8.7"
 async-fn-stream = "0.2.2"
 toml = "0.9.5"
 retry = "2.1.0"
+snafu = {version = "0.8.9", features = ["rust_1_81"]}
 inquire = "0.9.1"
 
 [features]
-default = []
+default = ["pixiv"]
 unstable = []
+pixiv = []
 
 [patch.crates-io]
 tagstudio_db = { git  = "https://github.com/RustyNova016/tagstudio_db.git" }
