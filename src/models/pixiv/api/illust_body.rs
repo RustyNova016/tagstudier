@@ -86,14 +86,14 @@ impl IllustBody {
             .await?;
 
         if self.ai_type == 2 {
-            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut trans, AI_TAG)
+            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut trans, AI_TAG.to_string())
                 .await
                 .unwrap();
 
             entry.add_tags(&mut trans, &ai_gen_tag).await.unwrap();
         }
 
-        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_DATA_IMPORT)
+        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_DATA_IMPORT.to_string())
             .await
             .unwrap();
 

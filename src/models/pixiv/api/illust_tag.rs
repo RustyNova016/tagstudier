@@ -54,13 +54,13 @@ impl IllustTagsTags {
         // Try to find the corresponding tags
         let mut tags = Vec::new();
 
-        tags.extend(Tag::find_tag_by_name(conn, &self.tag).await?);
+        tags.extend(Tag::find_tag_by_name(conn, self.tag.to_string()).await?);
         if let Some(tag) = &self.romaji {
-            tags.extend(Tag::find_tag_by_name(conn, tag).await?);
+            tags.extend(Tag::find_tag_by_name(conn, tag.to_string()).await?);
         }
 
         if let Some(tag) = &self.translation.as_ref().and_then(|t| t.en.as_ref()) {
-            tags.extend(Tag::find_tag_by_name(conn, tag).await?);
+            tags.extend(Tag::find_tag_by_name(conn, tag.to_string()).await?);
         }
 
         if !tags.is_empty() {
@@ -97,7 +97,7 @@ impl IllustTagsTags {
         let mut trans = conn.begin().await?;
         let new_tag = new_tag.insert_tag(&mut trans).await?;
 
-        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_TAG_IMPORT)
+        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_TAG_IMPORT.to_string())
             .await
             .unwrap();
 
