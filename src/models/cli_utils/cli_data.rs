@@ -8,6 +8,7 @@ use tagstudio_db::Library;
 use tokio::sync::RwLock;
 
 use crate::ColEyreVal;
+use crate::models::tsr_library::TSRLibrary;
 
 pub static CLI_DATA: LazyLock<RwLock<CliData>> = LazyLock::new(|| RwLock::new(CliData::default()));
 
@@ -35,5 +36,11 @@ impl CliData {
         };
 
         Library::try_new(lib_path).context("Couldn't get the root library")
+    }
+
+    pub async fn get_tsr_library(&self) -> ColEyreVal<TSRLibrary> {
+        let tsr = TSRLibrary::try_new(self.get_library().await?)?;
+        tsr.sync().await?;
+        Ok(tsr)
     }
 }
