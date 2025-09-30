@@ -29,19 +29,19 @@ impl RankTree {
         true
     }
 
-    pub async fn save_rel(tsr: TSRLibrary, top_entry: i64, bottom_entry: i64) -> ColEyre {
+    pub async fn save_rel(tsr: &TSRLibrary, top_entry: i64, bottom_entry: i64) -> ColEyre {
         sqlx::query("INSERT INTO `entry_ranks` (id, top_entry, bottom_entry, equal) VALUES (NULL, $1, $2, 0)").bind(top_entry).bind(bottom_entry).execute(&mut *tsr.tsr_db.get_conn().await?).await?;
         Ok(())
     }
 
     pub async fn add_rel_and_save(
         &mut self,
-        tsr: TSRLibrary,
+        tsr: &TSRLibrary,
         top_entry: i64,
         bottom_entry: i64,
     ) -> ColEyre {
         if self.add_rel(top_entry, bottom_entry) {
-            Self::save_rel(tsr, top_entry, bottom_entry).await?;
+            Self::save_rel(&tsr, top_entry, bottom_entry).await?;
         }
 
         Ok(())

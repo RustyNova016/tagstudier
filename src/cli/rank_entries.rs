@@ -21,7 +21,34 @@ pub struct RankEntriesCommand;
 
 impl RankEntriesCommand {
     pub async fn run(&self) -> ColEyre {
-        let lib = CLI_DATA.read().await.get_tsr_library().await?;
+        let tsr = CLI_DATA.read().await.get_tsr_library().await?;
+        let mut tree = Self::init_tree(&tsr).await?;
+        let mut last_entry_in_chain = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+        let mut new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+
+        loop {
+            let res = Self::prompt_comp(&tsr, &last_entry_in_chain, &new_entry).await?;
+
+            match res {
+                CompRes::Same => {
+                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                }
+
+                CompRes::AIsBetter => {
+                    tree.add_rel_and_save(&tsr, last_entry_in_chain.id, new_entry.id)
+                        .await?;
+                    last_entry_in_chain = new_entry;
+                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                }
+
+                CompRes::BIsBetter => {
+                    tree.add_rel_and_save(&tsr, new_entry.id, last_entry_in_chain.id)
+                        .await?;
+                    last_entry_in_chain = new_entry;
+                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                }
+            }
+        }
 
         Ok(())
     }
@@ -51,8 +78,36 @@ impl RankEntriesCommand {
                 ).fetch_one(&mut *lib.db.get().await?).await?)
     }
 
-    pub fn prompt_comp(entry_a: Entry, entry_b: Entry) -> ColEyreVal<CompRes> {
+    pub async fn prompt_comp(
+        tsr: &TSRLibrary,
+        entry_a: &Entry,
+        entry_b: &Entry,
+    ) -> ColEyreVal<CompRes> {
         println!("Comparing {} and {}", entry_a.id, entry_b.id);
+
+        let conf = viuer::Config {
+            width: Some(40),
+            height: Some(30),
+            x: 10,
+            y: 4,
+            ..Default::default()
+        };
+
+        viuer::print_from_file(
+            &entry_a
+                .get_global_path(&mut *tsr.library.db.get().await?)
+                .await?,
+            &conf,
+        )
+        .expect("Image printing failed.");
+
+        viuer::print_from_file(
+            &entry_b
+                .get_global_path(&mut *tsr.library.db.get().await?)
+                .await?,
+            &conf,
+        )
+        .expect("Image printing failed.");
 
         Ok(CompRes::select("Which is better:").prompt()?)
     }
