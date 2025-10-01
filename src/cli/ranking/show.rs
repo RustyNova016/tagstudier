@@ -14,9 +14,9 @@ use crate::models::tsr_library::TSRLibrary;
 
 /// Merge two tags together
 #[derive(Parser, Debug, Clone)]
-pub struct ShowRankCommand;
+pub struct RankingShowCommand;
 
-impl ShowRankCommand {
+impl RankingShowCommand {
     pub async fn run(&self) -> ColEyre {
         let tsr = CLI_DATA.read().await.get_tsr_library().await?;
         let tree = Self::init_tree(&tsr).await?;

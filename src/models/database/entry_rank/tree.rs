@@ -52,10 +52,18 @@ impl RankTree {
         Ok(())
     }
 
+    /// Return true if the entry is below the top entry in the tree, recursively
+    ///
+    /// ```
+    /// let tree = RankTree::new();
+    /// tree.add_rel(1, 2);
+    /// assert!(tree.is_below_entry(2))
+    /// ```
     pub fn is_below_entry(&self, top_entry: i64, bottom_entry: i64) -> bool {
         let mut parents = self.join.get_associated_lefts(&bottom_entry);
 
         while let Some(parent) = parents.pop() {
+            println!("par pop");
             if *parent == top_entry {
                 return true;
             }
@@ -102,7 +110,7 @@ impl RankTree {
                 .into_iter()
                 .filter(|new_id| {
                     // all the parents must have been yielded before that one
-                    let parents = self.get_better_entries(**new_id);
+                    let parents = self.get_parent_entries(**new_id);
                     parents.iter().all(|parent_id| dups.contains(&parent_id))
                 });
             items.extend(childrens.into_iter().map(|child| TopRanking {
@@ -116,11 +124,11 @@ impl RankTree {
         res
     }
 
-    pub fn get_better_entries(&self, id: i64) -> Vec<&i64> {
+    pub fn get_parent_entries(&self, id: i64) -> Vec<&i64> {
         self.join.get_associated_lefts_by_id(id)
     }
 
-/*     pub fn get_better_entries_recursive(&self, id: i64) -> Vec<&i64> {
+    /*     pub fn get_better_entries_recursive(&self, id: i64) -> Vec<&i64> {
         let better = self.get_better_entries(id);
 
         if better.is_empty() {
@@ -135,8 +143,43 @@ impl RankTree {
 
     } */
 
-    pub fn get_worse_entries(&self, id: i64) -> Vec<&i64> {
+    pub fn get_child_entries(&self, id: i64) -> Vec<&i64> {
         self.join.get_associated_rights_by_id(id)
+    }
+
+    pub fn get_siblings(&self, id: i64) -> Vec<&i64> {
+        let mut siblings = Vec::new();
+
+        // Get the siblings from the parents
+        for parent in self.get_parent_entries(id) {
+            siblings.extend(self.get_child_entries(*parent));
+        }
+
+        // Get the siblings from the childrens
+        for child in self.get_parent_entries(id) {
+            siblings.extend(self.get_child_entries(*child));
+        }
+
+        siblings.into_iter().unique().collect_vec()
+    }
+
+    pub fn get_rank(&self, id: i64) -> u64 {
+        self.get_parent_entries(id)
+            .into_iter()
+            .map(|parent| self.get_rank(*parent))
+            .max()
+            .map(|parent_rank| parent_rank + 1)
+            .unwrap_or(0)
+    }
+
+    /// Give the parent entries that are directly 1 rank above the one provided
+    pub fn get_direct_parents(&self, id: i64) -> Vec<&i64> {
+        let rank = self.get_rank(id);
+
+        self.get_parent_entries(id)
+            .into_iter()
+            .filter(|parent| self.get_rank(**parent) + 1 == rank)
+            .collect_vec()
     }
 }
 
@@ -157,5 +200,28 @@ impl Ord for TopRanking {
         self.layer
             .cmp(&other.layer)
             .then_with(|| self.id.cmp(&other.id))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_below() {
+        let mut tree = RankTree::new();
+        tree.add_rel(1, 2);
+        assert!(tree.is_below_entry(1, 2));
+
+        tree.add_rel(2, 3);
+        assert!(tree.is_below_entry(1, 3))
+    }
+
+    #[test]
+    fn test_add_rel() {
+        let mut tree = RankTree::new();
+        assert!(tree.add_rel(1, 2));
+        assert!(tree.add_rel(2, 3));
+        assert!(!tree.add_rel(3, 1));
     }
 }

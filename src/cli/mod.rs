@@ -8,10 +8,9 @@ pub mod manage_folders;
 pub mod merge_entries;
 pub mod merge_tags;
 pub mod mv;
-pub mod rank_entries;
+pub mod ranking;
 #[cfg(feature = "unstable")]
 pub mod rename_tag;
-pub mod show_rank;
 #[cfg(feature = "unstable")]
 pub mod tag_import;
 
@@ -32,10 +31,9 @@ use crate::cli::manage_folders::ManageFoldersCommand;
 use crate::cli::merge_entries::MergeEntriesCommand;
 use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
-use crate::cli::rank_entries::RankEntriesCommand;
+use crate::cli::ranking::RankingCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::rename_tag::RenameTagCommand;
-use crate::cli::show_rank::ShowRankCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::tag_import::TagImportCommand;
 use crate::models::cli_utils::cli_data::CLI_DATA;
@@ -109,13 +107,11 @@ pub enum Commands {
     MergeEntries(MergeEntriesCommand),
     MergeTags(MergeTagCommand),
     MV(MVCommand),
+    Ranking(RankingCommand),
     #[cfg(feature = "unstable")]
     RenameTag(RenameTagCommand),
     #[cfg(feature = "unstable")]
     TagImport(TagImportCommand),
-
-    ShowRank(ShowRankCommand),
-    RankEntries(RankEntriesCommand),
 }
 
 impl Commands {
@@ -131,12 +127,11 @@ impl Commands {
             Self::MergeEntries(val) => val.run().await?,
             Self::MergeTags(val) => val.run().await?,
             Self::MV(val) => val.run().await?,
+            Self::Ranking(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::RenameTag(val) => val.run().await,
             #[cfg(feature = "unstable")]
             Self::TagImport(val) => val.run().await?,
-            Self::ShowRank(val) => val.run().await?,
-            Self::RankEntries(val) => val.run().await?,
         }
 
         Ok(())
