@@ -1,20 +1,16 @@
 use core::fmt::Display;
-use core::fmt::write;
 
 use clap::Parser;
-use color_eyre::eyre::Context;
-use inquire::Select;
 use inquire_derive::Selectable;
 use tagstudio_db::Entry;
-use tagstudio_db::Library;
 
+use crate::utils::printing::print_entry_to_cli;
 use crate::ColEyre;
 use crate::ColEyreVal;
 use crate::models::cli_utils::cli_data::CLI_DATA;
 use crate::models::database::entry_rank::EntryRank;
 use crate::models::database::entry_rank::tree::RankTree;
 use crate::models::tsr_library::TSRLibrary;
-use crate::utils::cli_parser::parse_tag_name;
 
 /// Merge two tags together
 #[derive(Parser, Debug, Clone)]
@@ -27,10 +23,10 @@ impl ShowRankCommand {
         let mut rankings = tree.get_rankings();
 
         let conf = viuer::Config {
-            width: Some(40),
-            height: Some(30),
-            x: 10,
-            y: 4,
+            height: Some(40),
+            x: 0,
+            y: 0,
+            allow_vscode: true,
             ..Default::default()
         };
 
@@ -39,15 +35,25 @@ impl ShowRankCommand {
                 .await?
                 .unwrap();
 
-            println!("Rank #{}: {}", rank.0.layer + 1, entry.filename);
+            print!("{}[2J", 27 as char);
+            print_entry_to_cli(&tsr.library, &entry, &conf).await?;
 
-            viuer::print_from_file(
-                &entry
-                    .get_global_path(&mut *tsr.library.db.get().await?)
-                    .await?,
-                &conf,
-            )
-            .expect("Image printing failed.");
+            println!(
+                "Rank #{}: {} ({})",
+                rank.0.layer + 1,
+                entry.filename,
+                entry.id
+            );
+
+            match UserAction::select("").prompt()? {
+                UserAction::Continue => {}
+                UserAction::Exit => break,
+                UserAction::Favourite => {
+                    entry
+                        .add_tag_id(&mut *tsr.library.db.get().await?, 1) // Favourite is tag ID 1
+                        .await?
+                }
+            }
         }
 
         Ok(())
@@ -67,5 +73,22 @@ impl ShowRankCommand {
         }
 
         Ok(tree)
+    }
+}
+
+#[derive(Debug, Selectable, Clone, Copy)]
+pub enum UserAction {
+    Continue,
+    Favourite,
+    Exit,
+}
+
+impl Display for UserAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UserAction::Continue => write!(f, "Continue"),
+            UserAction::Favourite => write!(f, "Favourite"),
+            UserAction::Exit => write!(f, "Exit"),
+        }
     }
 }

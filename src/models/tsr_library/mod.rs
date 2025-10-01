@@ -14,7 +14,7 @@ pub struct TSRLibrary {
 
 impl TSRLibrary {
     pub fn try_new(lib: Library) -> ColEyreVal<TSRLibrary> {
-        let db = create_tsr_db(lib.path.join(".Tagstudio"))?;
+        let db = create_tsr_db(lib.path.join(".TagStudio"))?;
 
         Ok(Self {
             tsr_db: db,

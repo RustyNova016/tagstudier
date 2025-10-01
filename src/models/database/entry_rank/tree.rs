@@ -1,6 +1,7 @@
 use core::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
+use std::os::unix::process::parent_id;
 
 use itertools::Itertools;
 use sequelles::ManyToManyJoin;
@@ -17,6 +18,10 @@ impl RankTree {
         Self {
             join: ManyToManyJoin::default(),
         }
+    }
+
+    pub fn join(&self) -> &ManyToManyJoin<i64, i64> {
+        &self.join
     }
 
     pub fn add_rel(&mut self, top_entry: i64, bottom_entry: i64) -> bool {
@@ -61,21 +66,26 @@ impl RankTree {
         false
     }
 
+    pub fn get_tops(&self) -> impl Iterator<Item = &i64> {
+        self.join
+            .left_table()
+            .iter()
+            .filter(|id| self.join.get_associated_lefts_by_id(**id).is_empty())
+    }
+
+    pub fn get_bottoms(&self) -> impl Iterator<Item = &i64> {
+        self.join
+            .right_table()
+            .iter()
+            .filter(|id| self.join.get_associated_rights_by_id(**id).is_empty())
+    }
+
     pub fn get_rankings(&self) -> BinaryHeap<Reverse<TopRanking>> {
         let mut dups = HashSet::new();
 
-        let tops = self.join.clone().into_many_to_zero_left();
-        let mut items = tops
-            .into_iter()
-            .filter_map(|(top, bottoms)| {
-                let Some(top) = top else { return None };
-
-                if !bottoms.is_empty() {
-                    return None;
-                }
-
-                Some(TopRanking { id: top, layer: 0 })
-            })
+        let mut items = self
+            .get_tops()
+            .map(|id| TopRanking { id: *id, layer: 0 })
             .collect_vec();
 
         let mut res = BinaryHeap::new();
@@ -86,7 +96,15 @@ impl RankTree {
             }
             dups.insert(item.id);
 
-            let childrens = self.join.get_associated_lefts_by_id(item.id);
+            let childrens = self
+                .join
+                .get_associated_rights_by_id(item.id)
+                .into_iter()
+                .filter(|new_id| {
+                    // all the parents must have been yielded before that one
+                    let parents = self.get_better_entries(**new_id);
+                    parents.iter().all(|parent_id| dups.contains(&parent_id))
+                });
             items.extend(childrens.into_iter().map(|child| TopRanking {
                 layer: item.layer + 1,
                 id: *child,
@@ -96,6 +114,29 @@ impl RankTree {
         }
 
         res
+    }
+
+    pub fn get_better_entries(&self, id: i64) -> Vec<&i64> {
+        self.join.get_associated_lefts_by_id(id)
+    }
+
+/*     pub fn get_better_entries_recursive(&self, id: i64) -> Vec<&i64> {
+        let better = self.get_better_entries(id);
+
+        if better.is_empty() {
+            return Vec::new();
+        }
+
+        let mut out = Vec::with_capacity(better.len());
+        for id in better {
+            out.push(id);
+            out.extend(self.get_better_entries_recursive(id));
+        }
+
+    } */
+
+    pub fn get_worse_entries(&self, id: i64) -> Vec<&i64> {
+        self.join.get_associated_rights_by_id(id)
     }
 }
 

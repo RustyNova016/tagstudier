@@ -13,6 +13,6 @@ CREATE TABLE
         `equal` INTEGER NOT NULL CHECK(`equal` = 0 OR `equal` = 1) DEFAULT 0
     ) STRICT;
 
-CREATE UNIQUE INDEX `idx_entry_ranks` ON `entry_ranks` (`better_entry`, `worse_entry`);
+CREATE UNIQUE INDEX `idx_entry_ranks` ON `entry_ranks` (`top_entry`, `bottom_entry`);
 
 PRAGMA foreign_keys = ON;

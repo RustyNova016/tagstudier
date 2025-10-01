@@ -5,6 +5,10 @@ use clap::Parser;
 use color_eyre::eyre::Context;
 use inquire::Select;
 use inquire_derive::Selectable;
+use itertools::Itertools;
+use rand::Rng;
+use rand::seq::IndexedRandom;
+use rand::seq::SliceRandom;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
 
@@ -23,29 +27,34 @@ impl RankEntriesCommand {
     pub async fn run(&self) -> ColEyre {
         let tsr = CLI_DATA.read().await.get_tsr_library().await?;
         let mut tree = Self::init_tree(&tsr).await?;
-        let mut last_entry_in_chain = Self::pick_random_new_entry(&tsr.library, &[]).await?;
-        let mut new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+        let mut last_entry_in_chain = Self::pick_entry(&tsr, &tree, &[]).await?;
+        let mut new_entry = Self::pick_entry_from_other(&tsr, &tree, &last_entry_in_chain).await?;
 
         loop {
             let res = Self::prompt_comp(&tsr, &last_entry_in_chain, &new_entry).await?;
 
             match res {
                 CompRes::Same => {
-                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                    new_entry =
+                        Self::pick_entry_from_other(&tsr, &tree, &last_entry_in_chain).await?;
                 }
 
                 CompRes::AIsBetter => {
+                    println!("{} better than {}", last_entry_in_chain.id, new_entry.id);
                     tree.add_rel_and_save(&tsr, last_entry_in_chain.id, new_entry.id)
                         .await?;
                     last_entry_in_chain = new_entry;
-                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                    new_entry =
+                        Self::pick_entry_from_other(&tsr, &tree, &last_entry_in_chain).await?;
                 }
 
                 CompRes::BIsBetter => {
+                    println!("{} better than {}", new_entry.id, last_entry_in_chain.id);
                     tree.add_rel_and_save(&tsr, new_entry.id, last_entry_in_chain.id)
                         .await?;
                     last_entry_in_chain = new_entry;
-                    new_entry = Self::pick_random_new_entry(&tsr.library, &[]).await?;
+                    new_entry =
+                        Self::pick_entry_from_other(&tsr, &tree, &last_entry_in_chain).await?;
                 }
             }
         }
@@ -69,6 +78,69 @@ impl RankEntriesCommand {
         Ok(tree)
     }
 
+    async fn pick_entry_from_other(
+        tsr: &TSRLibrary,
+        tree: &RankTree,
+        entry: &Entry,
+    ) -> ColEyreVal<Entry> {
+        let mut blacklist = vec![entry.id];
+        blacklist.extend(tree.get_worse_entries(entry.id));
+        blacklist.extend(tree.get_better_entries(entry.id));
+
+        Self::pick_entry(tsr, tree, &blacklist).await
+    }
+
+    async fn pick_entry_id(
+        tsr: &TSRLibrary,
+        tree: &RankTree,
+        blacklist: &[i64],
+    ) -> ColEyreVal<i64> {
+        let mut orders = vec![
+            ImgPickingOrd::Tops,
+            ImgPickingOrd::Bottoms,
+            ImgPickingOrd::AnyRanked,
+            ImgPickingOrd::Any,
+        ];
+        orders.shuffle(&mut rand::rng());
+
+        let mut iter: Box<dyn Iterator<Item = i64>> = Box::new(Vec::new().into_iter());
+        for ord in orders {
+            match ord {
+                ImgPickingOrd::Tops => iter = Box::new(iter.chain(tree.get_tops().map(|id| *id))),
+                ImgPickingOrd::Bottoms => {
+                    iter = Box::new(iter.chain(tree.get_bottoms().map(|id| *id)))
+                }
+                ImgPickingOrd::AnyRanked => {
+                    iter = Box::new(
+                        iter.chain(tree.join().left_table().iter().map(|id| *id))
+                            .chain(tree.join().right_table().iter().map(|id| *id)),
+                    )
+                }
+                ImgPickingOrd::Any => {
+                    let ids = Self::get_all_entry_ids(&tsr.library).await?;
+                    iter = Box::new(iter.chain(ids.into_iter()))
+                }
+            }
+        }
+
+        let iter = iter.filter(|id| !blacklist.contains(id));
+        let candidates = iter.take(10).collect_vec();
+
+        Ok(candidates
+            .choose(&mut rand::rng())
+            .expect("Couldn't find any entry ids. Is there an entry in the db?")
+            .to_owned())
+    }
+
+    async fn pick_entry(tsr: &TSRLibrary, tree: &RankTree, blacklist: &[i64]) -> ColEyreVal<Entry> {
+        Ok(Entry::find_by_id(
+            &mut *tsr.library.db.get().await?,
+            Self::pick_entry_id(tsr, tree, blacklist).await?,
+        )
+        .await?
+        .unwrap())
+    }
+
     async fn pick_random_new_entry(lib: &Library, blacklist: &[i64]) -> ColEyreVal<Entry> {
         let blacklist = serde_json::to_string(blacklist)?;
         Ok(sqlx::query_as!(
@@ -78,36 +150,51 @@ impl RankEntriesCommand {
                 ).fetch_one(&mut *lib.db.get().await?).await?)
     }
 
+    async fn get_all_entry_ids(lib: &Library) -> ColEyreVal<Vec<i64>> {
+        Ok(
+            sqlx::query_scalar!("SELECT id FROM `entries` ORDER BY RANDOM()")
+                .fetch_all(&mut *lib.db.get().await?)
+                .await?,
+        )
+    }
+
     pub async fn prompt_comp(
         tsr: &TSRLibrary,
         entry_a: &Entry,
         entry_b: &Entry,
     ) -> ColEyreVal<CompRes> {
-        println!("Comparing {} and {}", entry_a.id, entry_b.id);
-
-        let conf = viuer::Config {
-            width: Some(40),
-            height: Some(30),
-            x: 10,
-            y: 4,
+        print!("{}[2J", 27 as char);
+        let conf_a = viuer::Config {
+            x: 0,
+            y: 0,
+            width: Some(50),
+            allow_vscode: true,
             ..Default::default()
         };
 
-        viuer::print_from_file(
-            &entry_a
-                .get_global_path(&mut *tsr.library.db.get().await?)
-                .await?,
-            &conf,
-        )
-        .expect("Image printing failed.");
+        let conf_b = viuer::Config {
+            x: 50,
+            y: 0,
+            width: Some(50),
+            allow_vscode: true,
+            ..Default::default()
+        };
 
-        viuer::print_from_file(
-            &entry_b
-                .get_global_path(&mut *tsr.library.db.get().await?)
-                .await?,
-            &conf,
-        )
-        .expect("Image printing failed.");
+        let path_a = entry_a
+            .get_global_path(&mut *tsr.library.db.get().await?)
+            .await?;
+
+        let path_b = entry_b
+            .get_global_path(&mut *tsr.library.db.get().await?)
+            .await?;
+
+        viuer::print_from_file(&path_a, &conf_a)
+            .expect(&format!("Image printing failed: {} ", path_a.display()));
+
+        viuer::print_from_file(&path_b, &conf_b)
+            .expect(&format!("Image printing failed: {} ", path_b.display()));
+
+        println!("A: {}, B: {}", entry_a.id, entry_b.id);
 
         Ok(CompRes::select("Which is better:").prompt()?)
     }
@@ -128,4 +215,11 @@ impl Display for CompRes {
             CompRes::Same => write!(f, "Skip"),
         }
     }
+}
+
+pub enum ImgPickingOrd {
+    Tops,
+    Bottoms,
+    AnyRanked,
+    Any,
 }
