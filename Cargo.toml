@@ -3,6 +3,10 @@ name = "tagstudier"
 version = "0.1.0"
 edition = "2024"
 
+exclude = [
+    "dev/*",
+]
+
 [dependencies]
 tagstudio_db = "0.4.0"
 sequelles = "0.1.0"
