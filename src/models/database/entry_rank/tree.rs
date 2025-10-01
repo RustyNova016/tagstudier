@@ -1,7 +1,6 @@
 use core::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
-use std::os::unix::process::parent_id;
 
 use itertools::Itertools;
 use sequelles::ManyToManyJoin;
@@ -44,12 +43,13 @@ impl RankTree {
         tsr: &TSRLibrary,
         top_entry: i64,
         bottom_entry: i64,
-    ) -> ColEyre {
+    ) -> ColEyre<bool> {
         if self.add_rel(top_entry, bottom_entry) {
             Self::save_rel(&tsr, top_entry, bottom_entry).await?;
+            return Ok(true);
         }
 
-        Ok(())
+        Ok(false)
     }
 
     /// Return true if the entry is below the top entry in the tree, recursively
@@ -180,6 +180,17 @@ impl RankTree {
             .into_iter()
             .filter(|parent| self.get_rank(**parent) + 1 == rank)
             .collect_vec()
+    }
+
+    pub async fn delete_all_relations_of(&mut self, tsr: &TSRLibrary, id: i64) -> ColEyre {
+        sqlx::query("DELETE FROM `entry_ranks` WHERE `top_entry` = $1 OR `bottom_entry` = $1")
+            .bind(id)
+            .execute(&mut *tsr.tsr_db.get_conn().await?)
+            .await?;
+
+        self.join.remove_left_row_id(&id);
+        self.join.remove_right_row_id(&id);
+        Ok(())
     }
 }
 

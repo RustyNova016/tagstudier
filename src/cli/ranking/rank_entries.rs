@@ -190,9 +190,39 @@ impl Ranker {
         top_entry: i64,
         bottom_entry: i64,
     ) -> ColEyre {
-        self.tree
+        if self
+            .tree
             .add_rel_and_save(tsr, top_entry, bottom_entry)
-            .await
+            .await?
+        {
+            return Ok(());
+        }
+
+        println!(
+            "Found inconsistency. Entry `{top_entry}` cannot be above entry `{bottom_entry}` as other relations determined it was below `{bottom_entry}`",
+        );
+        match OverWriteSelect::select("What do you want to do?").prompt()? {
+            OverWriteSelect::Skip => {}
+            OverWriteSelect::Invert => {
+                self.tree
+                    .add_rel_and_save(tsr, bottom_entry, top_entry)
+                    .await?;
+            }
+            OverWriteSelect::OverwriteTop => {
+                self.tree.delete_all_relations_of(tsr, top_entry).await?;
+                self.tree
+                    .add_rel_and_save(tsr, top_entry, bottom_entry)
+                    .await?;
+            }
+            OverWriteSelect::OverwriteBottom => {
+                self.tree.delete_all_relations_of(tsr, top_entry).await?;
+                self.tree
+                    .add_rel_and_save(tsr, top_entry, bottom_entry)
+                    .await?;
+            }
+        }
+
+        Ok(())
     }
 
     pub fn pick_entry_from_sibling(&self, left: i64) -> Vec<i64> {
@@ -251,3 +281,28 @@ static VIUER_CONF_R: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
     allow_vscode: true,
     ..Default::default()
 });
+
+#[derive(Debug, Selectable, Clone, Copy)]
+enum OverWriteSelect {
+    OverwriteTop,
+    OverwriteBottom,
+    Invert,
+    Skip,
+}
+
+impl Display for OverWriteSelect {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OverWriteSelect::OverwriteTop => write!(
+                f,
+                "Overwrite the rankings the top entry, and add the new relation"
+            ),
+            OverWriteSelect::OverwriteBottom => write!(
+                f,
+                "Overwrite the rankings the bottom entry, and add the new relation"
+            ),
+            OverWriteSelect::Invert => write!(f, "Invert ranking"),
+            OverWriteSelect::Skip => write!(f, "Do nothing"),
+        }
+    }
+}
