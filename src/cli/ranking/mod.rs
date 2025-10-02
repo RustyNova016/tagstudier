@@ -7,7 +7,6 @@ use crate::cli::ranking::show::RankingShowCommand;
 pub mod rank_entries;
 pub mod show;
 
-
 #[derive(Parser, Debug, Clone)]
 pub struct RankingCommand {
     #[command(subcommand)]
@@ -17,7 +16,7 @@ pub struct RankingCommand {
 #[derive(Subcommand, Debug, Clone)]
 pub enum RankingSubcommands {
     Show(RankingShowCommand),
-    Rank(RankEntriesCommand)
+    Rank(RankEntriesCommand),
 }
 
 impl RankingCommand {
@@ -28,4 +27,3 @@ impl RankingCommand {
         }
     }
 }
-

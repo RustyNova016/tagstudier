@@ -6,6 +6,7 @@ use itertools::Itertools;
 use sequelles::ManyToManyJoin;
 
 use crate::ColEyre;
+use crate::models::database::entry_rank::EntryRank;
 use crate::models::tsr_library::TSRLibrary;
 
 pub struct RankTree {
@@ -34,7 +35,14 @@ impl RankTree {
     }
 
     pub async fn save_rel(tsr: &TSRLibrary, top_entry: i64, bottom_entry: i64) -> ColEyre {
-        sqlx::query("INSERT INTO `entry_ranks` (id, top_entry, bottom_entry, equal) VALUES (NULL, $1, $2, 0)").bind(top_entry).bind(bottom_entry).execute(&mut *tsr.tsr_db.get_conn().await?).await?;
+        let mut ranking = EntryRank {
+            id: 0,
+            top_entry,
+            bottom_entry,
+            equal: false,
+        };
+
+        ranking.upsert(tsr).await?;
         Ok(())
     }
 
@@ -63,7 +71,7 @@ impl RankTree {
         let mut parents = self.join.get_associated_lefts(&bottom_entry);
 
         while let Some(parent) = parents.pop() {
-            println!("par pop");
+            //TODO: Optimise
             if *parent == top_entry {
                 return true;
             }
@@ -191,6 +199,19 @@ impl RankTree {
         self.join.remove_left_row_id(&id);
         self.join.remove_right_row_id(&id);
         Ok(())
+    }
+
+    pub fn get_all_entries(&self) -> impl Iterator<Item = &i64> {
+        self.join()
+            .left_table()
+            .iter()
+            .chain(self.join().right_table().iter())
+            .unique()
+    }
+
+    pub fn get_entries_with_ranking(&self, rank: u64) -> impl Iterator<Item = &i64> {
+        self.get_all_entries()
+            .filter(move |entry| self.get_rank(**entry) == rank)
     }
 }
 
