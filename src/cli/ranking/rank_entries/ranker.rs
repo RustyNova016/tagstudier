@@ -27,7 +27,7 @@ impl Ranker {
             tree,
         };
 
-        let ignored = EntryRank::fetch_all_equal(tsr).await?;
+        let ignored = EntryRank::fetch_all_ignored(tsr).await?;
         for rank in ignored {
             this.add_prompt(rank.top_entry, rank.bottom_entry);
         }

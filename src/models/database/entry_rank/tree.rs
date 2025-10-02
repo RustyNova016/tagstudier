@@ -39,7 +39,7 @@ impl RankTree {
             id: 0,
             top_entry,
             bottom_entry,
-            equal: false,
+            ignored: false,
         };
 
         ranking.upsert(tsr).await?;

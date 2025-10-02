@@ -46,7 +46,7 @@ impl RankEntriesCommand {
                         id: 0,
                         top_entry: last_entry_in_chain.id,
                         bottom_entry: new_entry.id,
-                        equal: false,
+                        ignored: false,
                     };
 
                     ranking.upsert(&tsr).await?;
@@ -76,7 +76,7 @@ impl RankEntriesCommand {
     }
 
     async fn init_tree(tsr: &TSRLibrary) -> ColEyreVal<RankTree> {
-        let ranks = EntryRank::fetch_all_non_equal(tsr).await?;
+        let ranks = EntryRank::fetch_all_non_ignored(tsr).await?;
         let mut tree = RankTree::new();
 
         for rank in ranks {
@@ -97,9 +97,9 @@ impl RankEntriesCommand {
         entry_a: &Entry,
         entry_b: &Entry,
     ) -> ColEyreVal<CompRes> {
-        print!("{}[2J", 27 as char);
+        println!("{}[2J", 27 as char);
 
-        print!(
+        println!(
             "Left: {} (Rank: {}) | Right: {} (Rank: {}) ",
             entry_a.id,
             ranker.tree.get_rank(entry_a.id) + 1,
@@ -109,8 +109,6 @@ impl RankEntriesCommand {
 
         print_entry_to_cli(&tsr.library, &entry_a, &VIUER_CONF_L).await?;
         print_entry_to_cli(&tsr.library, &entry_b, &VIUER_CONF_R).await?;
-
-        print!("b");
 
         Ok(CompRes::select("Which is better:").prompt()?)
     }

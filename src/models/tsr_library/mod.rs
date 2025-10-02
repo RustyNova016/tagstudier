@@ -27,7 +27,7 @@ impl TSRLibrary {
             .fetch_all(&mut *self.library.db.get().await?)
             .await?;
 
-            // TODO: use json to fill data
+        // TODO: use json to fill data
         let mut insert: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT OR IGNORE INTO `entries` (`id`) ");
         insert.push_values(entry_ids.iter(), |mut b, id| {
             b.push_bind(id);
