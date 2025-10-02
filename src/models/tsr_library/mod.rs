@@ -1,6 +1,5 @@
 use sequelles::databases::sqlite::database::SqliteDatabase;
-use sqlx::QueryBuilder;
-use sqlx::Sqlite;
+use sqlx::Acquire;
 use tagstudio_db::Library;
 
 use crate::ColEyre;
@@ -22,21 +21,27 @@ impl TSRLibrary {
         })
     }
 
+    /// Synchronize the data between the two dbs
     pub async fn sync(&self) -> ColEyre {
         let entry_ids = sqlx::query_scalar!("SELECT `id` FROM `entries`")
             .fetch_all(&mut *self.library.db.get().await?)
             .await?;
+        let entry_ids = serde_json::to_string(&entry_ids)?;
 
-        // TODO: use json to fill data
-        let mut insert: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT OR IGNORE INTO `entries` (`id`) ");
-        insert.push_values(entry_ids.iter(), |mut b, id| {
-            b.push_bind(id);
-        });
+        let conn = &mut *self.tsr_db.get_conn().await?;
+        let mut trans = conn.begin().await?;
 
-        let insert = insert.build();
-        insert.execute(&mut *self.tsr_db.get_conn().await?).await?;
+        sqlx::query("INSERT INTO `entries` SELECT value as id FROM JSON_EACH($1)")
+            .bind(&entry_ids)
+            .execute(&mut *trans)
+            .await?;
 
-        //TODO: Delete Entries
+        sqlx::query("DELETE FROM `entries` WHERE `id` NO IN (SELECT value FROM JSON_EACH($1))")
+            .bind(entry_ids)
+            .execute(&mut *trans)
+            .await?;
+
+        trans.commit().await?;
 
         Ok(())
     }

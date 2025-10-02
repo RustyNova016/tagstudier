@@ -137,6 +137,8 @@ static VIUER_CONF_L: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
     x: 0,
     y: 2,
     width: Some(50),
+    height: Some(70),
+    preserve_aspect_ratio: true,
     allow_vscode: true,
     restore_cursor: false,
     ..Default::default()
@@ -146,6 +148,8 @@ static VIUER_CONF_R: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
     x: 55,
     y: 2,
     width: Some(50),
+    height: Some(70),
+    preserve_aspect_ratio: true,
     restore_cursor: false,
     allow_vscode: true,
     ..Default::default()
