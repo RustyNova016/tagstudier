@@ -37,7 +37,7 @@ impl EntryRank {
     }
 
     pub async fn upsert(&mut self, tsr: &TSRLibrary) -> ColEyre {
-        let res = sqlx::query_as("INSERT INTO `entry_ranks` (id, top_entry, bottom_entry, ignored) VALUES (NULL, $1, $2, $3) ON CONFLICT DO UPDATE SET `entry_ranks`.`equal` = $3 RETURNING *")
+        let res = sqlx::query_as("INSERT INTO `entry_ranks` (id, top_entry, bottom_entry, ignored) VALUES (NULL, $1, $2, $3) ON CONFLICT DO UPDATE SET `ignored` = $3 RETURNING *")
             .bind(self.top_entry)
             .bind(self.bottom_entry)
             .bind(self.ignored)

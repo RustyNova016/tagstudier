@@ -46,7 +46,7 @@ impl RankEntriesCommand {
                         id: 0,
                         top_entry: last_entry_in_chain.id,
                         bottom_entry: new_entry.id,
-                        ignored: false,
+                        ignored: true,
                     };
 
                     ranking.upsert(&tsr).await?;
@@ -69,7 +69,9 @@ impl RankEntriesCommand {
                 }
             }
 
+            println!("Searching new entry...");
             new_entry = ranker.pick_entry(&tsr, last_entry_in_chain.id).await?;
+            println!("Done!");
         }
 
         Ok(())
@@ -99,6 +101,9 @@ impl RankEntriesCommand {
     ) -> ColEyreVal<CompRes> {
         println!("{}[2J", 27 as char);
 
+        print_entry_to_cli(&tsr.library, &entry_a, &VIUER_CONF_L).await?;
+        print_entry_to_cli(&tsr.library, &entry_b, &VIUER_CONF_R).await?;
+
         println!(
             "Left: {} (Rank: {}) | Right: {} (Rank: {}) ",
             entry_a.id,
@@ -106,9 +111,6 @@ impl RankEntriesCommand {
             entry_b.id,
             ranker.tree.get_rank(entry_b.id) + 1
         );
-
-        print_entry_to_cli(&tsr.library, &entry_a, &VIUER_CONF_L).await?;
-        print_entry_to_cli(&tsr.library, &entry_b, &VIUER_CONF_R).await?;
 
         Ok(CompRes::select("Which is better:").prompt()?)
     }
@@ -136,8 +138,8 @@ impl Display for CompRes {
 static VIUER_CONF_L: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
     x: 0,
     y: 2,
-    width: Some(50),
-    height: Some(70),
+    width: Some(80),
+    height: Some(60),
     preserve_aspect_ratio: true,
     allow_vscode: true,
     restore_cursor: false,
@@ -145,10 +147,10 @@ static VIUER_CONF_L: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
 });
 
 static VIUER_CONF_R: LazyLock<viuer::Config> = LazyLock::new(|| viuer::Config {
-    x: 55,
+    x: 85,
     y: 2,
-    width: Some(50),
-    height: Some(70),
+    width: Some(80),
+    height: Some(60),
     preserve_aspect_ratio: true,
     restore_cursor: false,
     allow_vscode: true,

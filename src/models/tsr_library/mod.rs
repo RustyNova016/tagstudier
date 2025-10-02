@@ -31,12 +31,12 @@ impl TSRLibrary {
         let conn = &mut *self.tsr_db.get_conn().await?;
         let mut trans = conn.begin().await?;
 
-        sqlx::query("INSERT INTO `entries` SELECT value as id FROM JSON_EACH($1)")
+        sqlx::query("INSERT OR IGNORE INTO `entries` SELECT value as id FROM JSON_EACH($1)")
             .bind(&entry_ids)
             .execute(&mut *trans)
             .await?;
 
-        sqlx::query("DELETE FROM `entries` WHERE `id` NO IN (SELECT value FROM JSON_EACH($1))")
+        sqlx::query("DELETE FROM `entries` WHERE `id` NOT IN (SELECT value FROM JSON_EACH($1))")
             .bind(entry_ids)
             .execute(&mut *trans)
             .await?;

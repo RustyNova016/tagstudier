@@ -1,5 +1,6 @@
 #[cfg(feature = "unstable")]
 pub mod api_framework;
+pub mod caching;
 pub mod cli_utils;
 pub mod config;
 pub mod database;
@@ -10,6 +11,7 @@ pub mod suggest_tag;
 #[cfg(feature = "unstable")]
 pub mod tag_providers;
 pub mod tsr_library;
+
 
 #[cfg(feature = "unstable")]
 use governor::RateLimiter;
@@ -25,3 +27,4 @@ use governor::state::NotKeyed;
 #[cfg(feature = "unstable")]
 pub type DefaultRateLimiter =
     RateLimiter<NotKeyed, InMemoryState, clock::DefaultClock, NoOpMiddleware>;
+

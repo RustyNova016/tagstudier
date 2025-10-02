@@ -60,7 +60,7 @@ impl RankingShowCommand {
     }
 
     async fn init_tree(tsr: &TSRLibrary) -> ColEyreVal<RankTree> {
-        let ranks = EntryRank::fetch_all(tsr).await?;
+        let ranks = EntryRank::fetch_all_non_ignored(tsr).await?;
         let mut tree = RankTree::new();
 
         for rank in ranks {

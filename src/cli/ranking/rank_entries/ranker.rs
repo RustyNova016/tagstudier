@@ -71,10 +71,11 @@ impl Ranker {
 
         let iter = self
             .pick_above_below(left)
-            .chain(self.pick_entry_from_new())
+            //.chain(self.pick_entry_from_new())
             .chain(self.pick_any_from_tree())
             .unique()
-            .filter(|entry| !blacklist.contains(entry));
+            .filter(|entry| !blacklist.contains(entry))
+            .chain(self.pick_any_from_tree());
 
         for entry_id in iter {
             if let Some(entry) = Entry::find_by_id(conn, entry_id).await? {
@@ -152,7 +153,7 @@ impl Ranker {
             iter = Box::new(iter.chain(self.tree.get_entries_with_ranking(rank - 1)))
         }
 
-        iter.unique().reservoir_rand(200).cloned()
+        iter.unique().reservoir_rand(50).cloned()
     }
 
     fn pick_any_from_tree(&self) -> impl Iterator<Item = i64> {

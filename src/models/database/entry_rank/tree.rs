@@ -6,17 +6,20 @@ use itertools::Itertools;
 use sequelles::ManyToManyJoin;
 
 use crate::ColEyre;
+use crate::datastructures::cachemap::CacheMap;
 use crate::models::database::entry_rank::EntryRank;
 use crate::models::tsr_library::TSRLibrary;
 
 pub struct RankTree {
     join: ManyToManyJoin<i64, i64>,
+    rank_cache: CacheMap<i64, u64>,
 }
 
 impl RankTree {
     pub fn new() -> Self {
         Self {
             join: ManyToManyJoin::default(),
+            rank_cache: Default::default(),
         }
     }
 
@@ -31,6 +34,7 @@ impl RankTree {
         }
 
         self.join.add_relation_and_insert(top_entry, bottom_entry);
+        self.rank_cache = Default::default();
         true
     }
 
@@ -172,12 +176,17 @@ impl RankTree {
     }
 
     pub fn get_rank(&self, id: i64) -> u64 {
-        self.get_parent_entries(id)
-            .into_iter()
-            .map(|parent| self.get_rank(*parent))
-            .max()
-            .map(|parent_rank| parent_rank + 1)
-            .unwrap_or(0)
+        self.rank_cache
+            .get_or_init(id, || {
+                self.get_parent_entries(id)
+                    .into_iter()
+                    .map(|parent| self.get_rank(*parent))
+                    .max()
+                    .map(|parent_rank| parent_rank + 1)
+                    .unwrap_or(0)
+            })
+            .as_ref()
+            .to_owned()
     }
 
     /// Give the parent entries that are directly 1 rank above the one provided
@@ -198,6 +207,7 @@ impl RankTree {
 
         self.join.remove_left_row_id(&id);
         self.join.remove_right_row_id(&id);
+        self.rank_cache = Default::default();
         Ok(())
     }
 
