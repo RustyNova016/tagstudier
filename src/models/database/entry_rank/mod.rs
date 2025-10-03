@@ -3,8 +3,8 @@ use sqlx::prelude::FromRow;
 use crate::ColEyre;
 use crate::models::tsr_library::TSRLibrary;
 
-pub mod tree;
 
+pub mod tree;
 #[derive(Debug, FromRow)]
 pub struct EntryRank {
     pub id: i64,
@@ -48,3 +48,5 @@ impl EntryRank {
         Ok(())
     }
 }
+
+
