@@ -10,11 +10,9 @@ use streamies::Streamies;
 use streamies::TryStreamies;
 use tagstudio_db::Entry;
 use tagstudio_db::models::library::Library;
-use tagstudio_db::query::Queryfragments;
 
 use crate::ColEyreVal;
 use crate::exts::path::PathExt;
-#[cfg(feature = "unstable")]
 use crate::models::pixiv::special_tags::PIXIV_DATA_IMPORT;
 
 #[ext]
@@ -25,7 +23,6 @@ pub impl Entry {
     /// - It has a name with the format `illust_{id}_p{page}.png`
     /// - It exist on disk
     /// - It has the "Pixiv: Imported Data" tag
-    #[cfg(feature = "unstable")]
     async fn find_downloaded_pixiv_entries(
         lib: &Library,
         illust_id: u64,
@@ -46,7 +43,7 @@ pub impl Entry {
                 }
 
                 if !entry
-                    .match_tag(&mut *lib.db.get().await?, PIXIV_DATA_IMPORT)
+                    .match_exact_tag(&mut *lib.db.get().await?, PIXIV_DATA_IMPORT)
                     .await?
                 {
                     return Ok(None);

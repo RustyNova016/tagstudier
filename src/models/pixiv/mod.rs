@@ -1,3 +1,7 @@
+pub mod cache;
+pub mod download_tasks;
+pub mod pixiv_entry;
+pub mod models;
 use color_eyre::eyre::OptionExt;
 use tagstudio_db::models::library::Library;
 
@@ -46,3 +50,4 @@ impl Default for PixivProvider {
         PixivProvider {}
     }
 }
+

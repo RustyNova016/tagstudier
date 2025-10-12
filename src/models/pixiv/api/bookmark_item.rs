@@ -11,9 +11,9 @@ use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tracing::debug;
 
+use crate::exts::tagstudio_db_ext::entry::EntryExt as _;
 use crate::ColEyre;
 use crate::ColEyreVal;
-use crate::exts::tagstudio_db_ext::entry::EntryExt;
 use crate::models::pixiv::PixivProvider;
 use crate::models::pixiv::special_tags::PIXIV_DATA_IMPORT;
 use crate::models::pixiv::utils::StringOrNum;
@@ -60,4 +60,6 @@ impl BookmarkItem {
 
         Ok(!missing_data)
     }
+
+
 }

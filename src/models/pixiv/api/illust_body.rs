@@ -1,5 +1,3 @@
-use std::thread;
-
 use color_eyre::eyre::Context as _;
 use futures::FutureExt;
 use futures::Stream;
@@ -10,12 +8,12 @@ use serde::Deserialize;
 use serde::Serialize;
 use sqlx::Acquire;
 use streamies::TryStreamies;
+use tagstudio_db::query::eq_entry_field::FieldValue;
+use tagstudio_db::query::trait_entry_filter::EntryFilter as _;
 use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tagstudio_db::Tag;
-use tagstudio_db::query::Queryfragments;
-use tagstudio_db::query::eq_field::EqField;
-use tagstudio_db::query::eq_field::FieldValue;
+use tagstudio_db::query::eq_entry_field::EqEntryField;
 
 use crate::ColEyre;
 use crate::ColEyreVal;
@@ -65,7 +63,10 @@ impl IllustBody {
         let mut trans = conn.begin_write().await?;
 
         // Check if the update is authorized
-        if entry.has_tag(&mut trans, PIXIV_NO_DATA_UPDATE).await? {
+        if entry
+            .match_exact_tag(&mut trans, PIXIV_NO_DATA_UPDATE)
+            .await?
+        {
             return Ok(());
         }
 
@@ -85,14 +86,14 @@ impl IllustBody {
             .await?;
 
         if self.ai_type == 2 {
-            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut trans, AI_TAG)
+            let ai_gen_tag = Tag::get_by_name_or_insert_new(&mut trans, AI_TAG.to_string())
                 .await
                 .unwrap();
 
             entry.add_tags(&mut trans, &ai_gen_tag).await.unwrap();
         }
 
-        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_DATA_IMPORT)
+        let pixiv_import_tag = Tag::get_by_name_or_insert_new(&mut trans, PIXIV_DATA_IMPORT.to_string())
             .await
             .unwrap();
 
@@ -124,10 +125,10 @@ impl IllustBody {
         // First, get all the entries with the url of the illust
         let url = format!("https://www.pixiv.net/en/artworks/{}", self.illust_id);
 
-        let condition = Queryfragments::from(EqField::new(
-            "URL".into(),
-            FieldValue::Text(url.to_string()),
-        ));
+        let condition = EqEntryField {
+            field_type: "URL".into(),
+            value: FieldValue::Text(url.to_string()),
+        };
 
         let mut conn = lib.db.get().await?;
 

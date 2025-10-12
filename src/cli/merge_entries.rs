@@ -24,7 +24,7 @@ impl MergeEntriesCommand {
             .db
             .get()
             .await
-            .context("Couldn't open a new connection to the library database")?;
+            .context("Couldn't open a new connection to the library database")?; 
 
         let target_path = PathBuf::from(&self.entry).canonicalize()?;
         let mut target = Entry::find_by_cannon_path(conn, &target_path).await?;

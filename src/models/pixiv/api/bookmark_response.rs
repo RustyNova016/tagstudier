@@ -11,6 +11,8 @@ pub struct BookmarkResponse {
 }
 
 impl BookmarkResponse {
+    
+
     // pub fn download(&self, lib: &Library, overwrite_file: bool) -> impl Stream<Item = ColEyre> {
     //     stream::iter(&self.works)
     //         .map(move |work| async move { work.download(lib, overwrite_file).await })
