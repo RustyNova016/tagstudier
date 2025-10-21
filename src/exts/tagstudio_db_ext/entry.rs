@@ -1,18 +1,14 @@
-use std::path::PathBuf;
-
 use color_eyre::eyre::Ok;
 use extend::ext;
 use futures::StreamExt as _;
 use futures::TryStreamExt;
 use futures::stream;
-use itertools::Itertools;
-use streamies::Streamies;
 use streamies::TryStreamies;
 use tagstudio_db::Entry;
 use tagstudio_db::models::library::Library;
 
+use crate::utils::filesystem::file_cache::FILE_CACHE;
 use crate::ColEyreVal;
-use crate::exts::path::PathExt;
 use crate::models::pixiv::special_tags::PIXIV_DATA_IMPORT;
 
 #[ext]
@@ -38,7 +34,8 @@ pub impl Entry {
 
         stream::iter(entries)
             .map(async |entry| {
-                if !entry.exists_on_disk(&mut *lib.db.get().await?).await? {
+                let entry_path = entry.get_global_path(&mut *lib.db.get().await?).await?;
+                if !FILE_CACHE.path_exist(&entry_path)? {
                     return Ok(None);
                 }
 

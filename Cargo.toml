@@ -52,6 +52,7 @@ toml = "0.9.5"
 retry = "2.1.0"
 snafu = {version = "0.8.9", features = ["rust_1_81"]}
 inquire = "0.9.1"
+dashmap = "6.1.0"
 
 [features]
 default = ["pixiv"]

@@ -3,7 +3,6 @@ use tagstudio_db::Library;
 use tagstudio_db::query::entry_search_query::EntrySearchQuery;
 use tagstudio_db::query::eq_entry_field::EqEntryField;
 use tagstudio_db::query::eq_entry_field::FieldValue;
-use tagstudio_db::query::eq_entry_name::EqEntryName;
 use tagstudio_db::query::eq_tag_string::EqTagString;
 use tagstudio_db::query::trait_entry_filter::EntryFilter;
 use tagstudio_db::query::trait_tag_filter::TagFilter;
