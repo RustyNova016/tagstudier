@@ -8,7 +8,7 @@ exclude = [
 ]
 
 [dependencies]
-tagstudio_db = {git = "https://github.com/RustyNova016/tagstudio_db.git", rev = "5bf32fe7255f935925560de784205212e9689e35"}
+tagstudio_db = {git = "https://github.com/RustyNova016/tagstudio_db.git", rev = "7d9cbb9972fc50c4c01b42c6baad018386190a96"}
 #tagstudio_db = {path = "../tagstudio_db"}
 
 thiserror = "2.0.12"
