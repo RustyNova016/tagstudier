@@ -47,9 +47,15 @@ impl LinkUrlsCommand {
             if let Some(url) = url {
                 info!("Adding url `{url}` for `{}`", entry.filename);
                 if !self.dry {
-                    TextField::insert_text_field(conn, entry.id, "URL", &url)
-                        .await
-                        .expect("Couldn't save url field");
+                    let text = TextField {
+                        id: 0,
+                        entry_id: entry.id,
+                        position: 0,
+                        type_key: "URL".to_string(),
+                        value: Some(url),
+                    };
+
+                    text.insert(conn).await.expect("Couldn't save url field");
                 }
             }
         }

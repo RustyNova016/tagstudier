@@ -10,7 +10,6 @@ use streamies::Streamies;
 use streamies::TryStreamies;
 use tagstudio_db::Entry;
 use tagstudio_db::models::library::Library;
-use tagstudio_db::query::Queryfragments;
 
 use crate::ColEyreVal;
 use crate::exts::path::PathExt;
@@ -46,7 +45,7 @@ pub impl Entry {
                 }
 
                 if !entry
-                    .match_tag(&mut *lib.db.get().await?, PIXIV_DATA_IMPORT)
+                    .match_exact_tag(&mut *lib.db.get().await?, PIXIV_DATA_IMPORT)
                     .await?
                 {
                     return Ok(None);

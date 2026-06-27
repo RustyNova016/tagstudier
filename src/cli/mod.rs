@@ -17,8 +17,8 @@ use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
-#[cfg(feature = "unstable")]
-use crate::cli::autosort::AutosortCommand;
+// #[cfg(feature = "unstable")]
+// use crate::cli::autosort::AutosortCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::download::DownloadCommand;
 #[cfg(feature = "unstable")]
