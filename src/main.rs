@@ -4,10 +4,10 @@ use crate::cli::Cli;
 pub(crate) use crate::error::Error;
 use crate::interface::tracing::init_tracer;
 
-#[cfg(feature = "unstable")]
-pub(crate) mod apis;
+// #[cfg(feature = "unstable")]
+// pub(crate) mod apis;
 pub(crate) mod cli;
-pub(crate) mod constants;
+// pub(crate) mod constants;
 pub(crate) mod error;
 pub(crate) mod exts;
 pub(crate) mod interface;

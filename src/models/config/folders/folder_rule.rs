@@ -8,7 +8,7 @@ use tagstudio_db::Entry;
 use tagstudio_db::Library;
 use tagstudio_db::query::entry_search_query::EntrySearchQuery;
 use tagstudio_db::query::eq_any_entry_id::EqAnyEntryId;
-use tagstudio_db::query::trait_entry_filter::EntryFilter as _;
+use tagstudio_db::query::trait_entry_filter::QueryEntryFilter as _;
 use tracing::warn;
 
 use crate::ColEyreVal;
@@ -39,6 +39,25 @@ impl FolderRule {
 
         Ok(entries_moved)
     }
+
+    // async fn get_destination(&self, lib: &Library, entry: &Entry) -> ColEyreVal<PathBuf> {
+    //     let Some(mut filename) = entry.get_filename() else {
+    //         return Err(eyre!(
+    //             "Found an entry without a filename: {}",
+    //             entry.path.to_string()
+    //         ));
+    //     };
+
+    //     let count = 0
+    //     loop {
+
+    //         let dest = self.absolute_path(lib).join(filename);
+
+    //         if !Entry::find_by_cannon_path(&mut *lib.db.get().await?, &dest).await?.is_empty()
+    //     }
+
+    //     todo!();
+    // }
 
     /// Move the entry to this rule's path. It doesn't actually check if it the entry match this rule, but check if it can move it there nonetheless
     ///

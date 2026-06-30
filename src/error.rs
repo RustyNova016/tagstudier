@@ -1,5 +1,4 @@
 use thiserror::Error;
-use tracing::error;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -24,7 +23,7 @@ pub enum Error {
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
 
-    #[cfg(feature = "unstable")]
-    #[error("Max tries for request")]
-    MaxTries,
+    // #[cfg(feature = "unstable")]
+    // #[error("Max tries for request")]
+    // MaxTries,
 }

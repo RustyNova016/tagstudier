@@ -1,3 +1,3 @@
-#[cfg(feature = "unstable")]
-pub mod entry;
+// #[cfg(feature = "unstable")]
+// pub mod entry;
 pub mod library;
