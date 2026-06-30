@@ -5,7 +5,8 @@ use regex::Regex;
 use streamies::TryStreamies as _;
 use tagstudio_db::models::entry::Entry;
 use tagstudio_db::models::library::Library;
-use tagstudio_db::models::text_field::TextField;
+use tagstudio_db::models::text_field::TextFieldInsert;
+use tagstudio_db::sequelles::InsertOrIgnore as _;
 use tracing::info;
 
 /// Add links to images based on their filename
@@ -36,7 +37,7 @@ impl LinkUrlsCommand {
                 .get_text_fields(conn)
                 .await
                 .expect("Couldn't get entry feilds");
-            if fields.iter().any(|field| field.type_key == "URL") {
+            if fields.iter().any(|field| field.name == "URL") {
                 continue;
             }
 
@@ -47,15 +48,15 @@ impl LinkUrlsCommand {
             if let Some(url) = url {
                 info!("Adding url `{url}` for `{}`", entry.filename);
                 if !self.dry {
-                    let text = TextField {
-                        id: 0,
-                        entry_id: entry.id,
-                        position: 0,
-                        type_key: "URL".to_string(),
-                        value: Some(url),
-                    };
-
-                    text.insert(conn).await.expect("Couldn't save url field");
+                    TextFieldInsert::builder()
+                        .entry_id(entry.id)
+                        .name("URL")
+                        .value(url)
+                        .is_multiline(false)
+                        .build()
+                        .insert_or_ignore(conn)
+                        .await
+                        .expect("Couldn't save url field");
                 }
             }
         }
