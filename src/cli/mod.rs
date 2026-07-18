@@ -1,3 +1,4 @@
+pub mod tags;
 // #[cfg(feature = "unstable")]
 // pub mod tag_import;
 use clap::Parser;
@@ -19,6 +20,7 @@ use crate::cli::merge_tags::MergeTagCommand;
 use crate::cli::mv::MVCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::rename_tag::RenameTagCommand;
+use crate::cli::tags::TagsCommand;
 // #[cfg(feature = "unstable")]
 // use crate::cli::tag_import::TagImportCommand;
 use crate::models::cli_utils::cli_data::CLI_DATA;
@@ -109,6 +111,7 @@ pub enum Commands {
     RenameTag(RenameTagCommand),
     // #[cfg(feature = "unstable")]
     // TagImport(TagImportCommand),
+    Tags(TagsCommand),
 }
 
 impl Commands {
@@ -126,6 +129,7 @@ impl Commands {
             Self::MV(val) => val.run().await?,
             #[cfg(feature = "unstable")]
             Self::RenameTag(val) => val.run().await,
+            Self::Tags(val) => val.run().await,
             // #[cfg(feature = "unstable")]
             // Self::TagImport(val) => val.run().await?,
         }
