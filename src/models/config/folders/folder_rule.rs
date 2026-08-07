@@ -73,13 +73,13 @@ impl FolderRule {
         let dest = self.absolute_path(lib).join(filename);
 
         // Check if the entry isn't already there
-        if dest == entry.get_global_path(&mut *lib.db.get().await?).await? {
+        if dest == entry.get_full_path(&lib.path) {
             return Ok(true);
         }
 
         self.absolute_path(lib).create_directory_if_not_exist()?;
         match entry
-            .move_file_from_canon_path(&mut *lib.db.get().await?, &dest)
+            .move_file_from_canon_path(&mut *lib.db.get().await?, &dest, &lib.path)
             .await
         {
             Ok(_) => {}

@@ -27,7 +27,7 @@ impl MergeEntriesCommand {
             .context("Couldn't open a new connection to the library database")?;
 
         let target_path = PathBuf::from(&self.entry).canonicalize()?;
-        let mut target = Entry::find_by_cannon_path(conn, &target_path).await?;
+        let mut target = Entry::find_by_full_path(conn, &target_path, &lib.path).await?;
 
         if target.is_empty() {
             return Err(eyre!("Couldn't find entry at `{}`", target_path.display()));
@@ -41,10 +41,10 @@ impl MergeEntriesCommand {
 
         for entry_to_merge in &self.entries_to_merge {
             let merged_path = PathBuf::from(entry_to_merge).canonicalize()?;
-            let merged = Entry::find_by_cannon_path(conn, &merged_path).await?;
+            let merged = Entry::find_by_full_path(conn, &merged_path, &lib.path).await?;
 
             for entry in merged {
-                target.merge_entry(conn, entry).await?;
+                target.merge_entry(conn, entry, &lib.path).await?;
             }
         }
 
