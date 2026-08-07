@@ -40,7 +40,7 @@ impl MVCommand {
             .join(PathBuf::from(&self.to))
             .normalize_lexically_stable()?;
 
-        let mut entries = Entry::find_by_cannon_path(conn, &from)
+        let mut entries = Entry::find_by_full_path(conn, &from, &lib.path)
             .await
             .expect("Couldn't get the corresponding entries");
 
@@ -57,7 +57,7 @@ impl MVCommand {
 
         if !self.dry {
             entry
-                .move_file_from_canon_path(conn, &to)
+                .move_file_from_canon_path(conn, &to, &lib.path)
                 .await
                 .expect("Couldn't move the file");
         }
