@@ -33,7 +33,7 @@ clap-verbosity-flag = { version = "3.0.3", default-features = false, features = 
 clap-markdown = "0.1.5"
 
 # Database
-sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "31ab82c0992c92a33f42b5578b9192c27a234bc5"}
+sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "1456f244a45127fe208be30de597076e48c84c6d"}
 sqlx = { version = "0.9.0", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 
 # Tracing
