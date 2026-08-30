@@ -84,7 +84,7 @@ mod tests {
     fn test_parse_pixiv_mobile_valid() {
         assert_eq!(
             parse_pixiv_mobile("illust_12345678_20240601_123456.jpg"),
-            Some("https://www.pixiv.net/en/artwork/12345678".to_string())
+            Some("https://www.pixiv.net/en/artworks/12345678".to_string())
         );
     }
 

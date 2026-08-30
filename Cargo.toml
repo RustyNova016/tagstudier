@@ -8,7 +8,7 @@ exclude = [
 ]
 
 [dependencies]
-tagstudio_db = {git = "https://github.com/RustyNova016/tagstudio_db.git", rev = "a8ed300afeca1f3f239b58aa5ce993436bd727a2"}
+tagstudio_db = {git = "https://github.com/RustyNova016/tagstudio_db.git", rev = "31cae07c30a12b6ab6847cc3d645b287885cca0d"}
 #tagstudio_db = {path = "../tagstudio_db"}
 
 thiserror = "2.0.12"
@@ -28,12 +28,12 @@ clap = { version = "4.5.41", features = [
     "derive",
     "color",
 ] }
-clap_complete = "4.5.55"
+#clap_complete = "4.5.55"
 clap-verbosity-flag = { version = "3.0.3", default-features = false, features = ["tracing"] }
 clap-markdown = "0.1.5"
 
 # Database
-sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "31ab82c0992c92a33f42b5578b9192c27a234bc5"}
+#sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "31ab82c0992c92a33f42b5578b9192c27a234bc5"}
 sqlx = { version = "0.9.0", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 
 # Tracing
@@ -49,20 +49,16 @@ directories = "6.0.0"
 regex = "1.11.1"
 serde = "1.0.219"
 governor = "0.10.0"
-tracing-test = "0.2.5"
+#tracing-test = "0.2.5"
 itertools = "0.14.0"
 image = "0.25.6"
 extend = "1.2.0"
 color-eyre = "0.6.5"
-sorted-vec = "0.8.7"
 async-fn-stream = "0.2.2"
 toml = "0.9.5"
-retry = "2.1.0"
 inquire = "0.9.1"
 
 [features]
 default = []
 unstable = []
 
-[patch.crates-io]
-tagstudio_db = { git  = "https://github.com/RustyNova016/tagstudio_db.git" }
