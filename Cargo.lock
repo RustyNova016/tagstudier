@@ -3885,7 +3885,7 @@ dependencies = [
  "indicatif",
  "inquire",
  "inquire-derive",
- "itertools 0.14.0",
+ "itertools 0.15.0",
  "owo-colors",
  "rand 0.10.1",
  "regex",
