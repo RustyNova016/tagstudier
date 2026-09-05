@@ -32,6 +32,10 @@ clap = { version = "4.5.41", features = [
 clap-verbosity-flag = { version = "3.0.3", default-features = false, features = ["tracing"] }
 clap-markdown = "0.1.5"
 
+# CLI interface
+inquire = "0.9.1"
+viuer = { git = "https://github.com/RustyNova016/viuer.git", rev = "f65b2db8574a0efbe3f49feaa2edb379d830f2fe"}
+
 # Database
 #sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "31ab82c0992c92a33f42b5578b9192c27a234bc5"}
 sqlx = { version = "0.9.0", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
@@ -56,7 +60,12 @@ extend = "1.2.0"
 color-eyre = "0.6.5"
 async-fn-stream = "0.2.2"
 toml = "0.9.5"
-inquire = "0.9.1"
+strum = { version = "0.28.0", features = ["derive"] }
+inquire-derive = "0.9.4"
+async-trait = "0.1.89"
+rand = "0.10.1"
+spire_enum = "1.0.0"
+
 
 [features]
 default = []

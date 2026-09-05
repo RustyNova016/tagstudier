@@ -11,7 +11,7 @@ use tagstudio_db::query::eq_any_entry_id::EqAnyEntryId;
 use tagstudio_db::query::trait_entry_filter::QueryEntryFilter as _;
 use tracing::warn;
 
-use crate::ColEyreVal;
+use crate::ColEyre;
 use crate::exts::path::PathExt as _;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,7 +27,7 @@ impl FolderRule {
         lib.path.join(&self.path)
     }
 
-    pub async fn sort_entries(&self, lib: &Library, black_list: Vec<i64>) -> ColEyreVal<Vec<i64>> {
+    pub async fn sort_entries(&self, lib: &Library, black_list: Vec<i64>) -> ColEyre<Vec<i64>> {
         let entries = self.get_entries_to_sort(lib, black_list).await?;
         let mut entries_moved = Vec::new();
 
@@ -62,7 +62,7 @@ impl FolderRule {
     /// Move the entry to this rule's path. It doesn't actually check if it the entry match this rule, but check if it can move it there nonetheless
     ///
     /// If the entry has been moved, returns true
-    async fn move_entry_unchecked(&self, lib: &Library, entry: &mut Entry) -> ColEyreVal<bool> {
+    async fn move_entry_unchecked(&self, lib: &Library, entry: &mut Entry) -> ColEyre<bool> {
         let Some(filename) = entry.get_filename() else {
             return Err(eyre!(
                 "Found an entry without a filename: {}",
@@ -110,7 +110,7 @@ impl FolderRule {
         &self,
         lib: &Library,
         black_list: Vec<i64>,
-    ) -> ColEyreVal<Vec<Entry>> {
+    ) -> ColEyre<Vec<Entry>> {
         let mut search = EntrySearchQuery::parse(&self.sorting)?;
 
         // Remove every item in the blacklist

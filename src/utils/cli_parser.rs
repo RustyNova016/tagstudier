@@ -5,7 +5,7 @@ use color_eyre::eyre::Context;
 use tagstudio_db::models::tag::Tag;
 use tagstudio_db::sqlx::SqliteConnection;
 
-use crate::ColEyreVal;
+use crate::ColEyre;
 
 pub async fn parse_tag_name(conn: &mut SqliteConnection, tag: &str) -> Result<Tag, crate::Error> {
     if tag.starts_with("tag_id:") {
@@ -37,7 +37,7 @@ pub async fn parse_tag_name(conn: &mut SqliteConnection, tag: &str) -> Result<Ta
 }
 
 /// Parse a cli input into a canonical pathbuf
-pub fn cli_parse_path_buf(data: &str) -> ColEyreVal<PathBuf> {
+pub fn cli_parse_path_buf(data: &str) -> ColEyre<PathBuf> {
     PathBuf::from_str(data)
         .unwrap()
         .canonicalize()

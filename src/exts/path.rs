@@ -62,10 +62,10 @@ pub impl Path {
     ///
     /// </div>
     ///
-    /// [`path::absolute`](absolute) is an alternative that preserves `..`.
-    /// Or [`Path::canonicalize`] can be used to resolve any `..` by querying the filesystem.
+    /// `path::absolute` is an alternative that preserves `..`.
+    /// Or `Path::canonicalize` can be used to resolve any `..` by querying the filesystem.
     ///
-    /// Extracted from https://github.com/rust-lang/rust/pull/134696/files
+    /// Extracted from <https://github.com/rust-lang/rust/pull/134696/files>
     fn normalize_lexically_stable(&self) -> ColEyreVal<PathBuf> {
         let mut lexical = PathBuf::new();
         let mut iter = self.components().peekable();
