@@ -15,8 +15,8 @@ pub(crate) mod models;
 pub(crate) mod tests;
 pub(crate) mod utils;
 
-pub(crate) type ColEyreVal<T> = color_eyre::Result<T>;
-pub(crate) type ColEyre = color_eyre::Result<()>;
+pub(crate) type ColEyre<T = ()> = color_eyre::Result<T>;
+pub(crate) type ColEyreVal<T = ()> = color_eyre::Result<T>;
 
 #[tokio::main]
 async fn main() -> ColEyre {

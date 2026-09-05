@@ -1,17 +1,12 @@
-pub mod tags;
-// #[cfg(feature = "unstable")]
-// pub mod tag_import;
 use clap::Parser;
 use clap::Subcommand;
 use clap_verbosity_flag::InfoLevel;
 use clap_verbosity_flag::Verbosity;
 
+use crate::cli::entries::EntriesCommand;
 // #[cfg(feature = "unstable")]
 // use crate::cli::autosort::AutosortCommand;
-// #[cfg(feature = "unstable")]
-// use crate::cli::download::DownloadCommand;
-// #[cfg(feature = "unstable")]
-// use crate::cli::download_bookmarks::DownloadBookmarksCommand;
+use crate::cli::find_entry::FindEntryommand;
 #[cfg(feature = "unstable")]
 use crate::cli::link_urls::LinkUrlsCommand;
 use crate::cli::manage_folders::ManageFoldersCommand;
@@ -21,14 +16,14 @@ use crate::cli::mv::MVCommand;
 #[cfg(feature = "unstable")]
 use crate::cli::rename_tag::RenameTagCommand;
 use crate::cli::tags::TagsCommand;
-// #[cfg(feature = "unstable")]
-// use crate::cli::tag_import::TagImportCommand;
 use crate::models::cli_utils::cli_data::CLI_DATA;
 
 // #[cfg(feature = "unstable")]
 // pub mod download;
 // #[cfg(feature = "unstable")]
 // pub mod download_bookmarks;
+pub mod entries;
+pub mod find_entry;
 #[cfg(feature = "unstable")]
 pub mod link_urls;
 pub mod manage_folders;
@@ -37,6 +32,7 @@ pub mod merge_tags;
 pub mod mv;
 #[cfg(feature = "unstable")]
 pub mod rename_tag;
+pub mod tags;
 
 /// Tools for TagStudio
 #[derive(Parser, Debug, Clone)]
@@ -101,6 +97,8 @@ pub enum Commands {
     // Download(DownloadCommand),
     // #[cfg(feature = "unstable")]
     // DownloadBookmarks(DownloadBookmarksCommand),
+    Entries(EntriesCommand),
+    FindEntry(FindEntryommand),
     #[cfg(feature = "unstable")]
     LinkUrls(LinkUrlsCommand),
     ManageFolders(ManageFoldersCommand),
@@ -121,6 +119,8 @@ impl Commands {
             // Self::Download(val) => val.run().await?,
             // #[cfg(feature = "unstable")]
             // Self::DownloadBookmarks(val) => val.run().await?,
+            Self::Entries(val) => val.run().await?,
+            Self::FindEntry(val) => val.run().await,
             #[cfg(feature = "unstable")]
             Self::LinkUrls(val) => val.run().await,
             Self::ManageFolders(val) => val.run().await?,
@@ -132,7 +132,7 @@ impl Commands {
             Self::Tags(val) => val.run().await,
             // #[cfg(feature = "unstable")]
             // Self::TagImport(val) => val.run().await?,
-        }
+        };
 
         Ok(())
     }
