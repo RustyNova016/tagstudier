@@ -34,7 +34,7 @@ clap-markdown = "0.1.5"
 
 # CLI interface
 inquire = "0.9.1"
-viuer = { git = "https://github.com/RustyNova016/viuer.git", rev = "f65b2db8574a0efbe3f49feaa2edb379d830f2fe"}
+viuer = { git = "https://github.com/RustyNova016/viuer.git", rev = "176efef624d9cd58253e3d2a0fa36db4a8cf73f3"}
 
 # Database
 #sequelles = {git = "https://github.com/RustyNova016/sequelles.git", rev = "31ab82c0992c92a33f42b5578b9192c27a234bc5"}
