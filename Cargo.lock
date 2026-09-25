@@ -3730,6 +3730,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "streamies"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7bad66f799b603bf8e36b9352e820a23e2607bc28786cf9acfc8f53427b5240d"
+dependencies = [
+ "futures",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "stringprep"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3883,7 +3893,7 @@ dependencies = [
  "serde_json",
  "spire_enum",
  "sqlx",
- "streamies",
+ "streamies 0.3.1",
  "strum",
  "tagstudio_db",
  "thiserror 2.0.18",
@@ -3914,7 +3924,7 @@ dependencies = [
  "serde_json",
  "snafu",
  "sqlx",
- "streamies",
+ "streamies 0.2.2",
  "thiserror 2.0.18",
  "tracing",
  "trash",
