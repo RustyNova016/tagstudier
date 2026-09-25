@@ -4538,7 +4538,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "viuer"
 version = "0.9.2"
-source = "git+https://github.com/RustyNova016/viuer.git?rev=f65b2db8574a0efbe3f49feaa2edb379d830f2fe#f65b2db8574a0efbe3f49feaa2edb379d830f2fe"
+source = "git+https://github.com/RustyNova016/viuer.git?rev=176efef624d9cd58253e3d2a0fa36db4a8cf73f3#176efef624d9cd58253e3d2a0fa36db4a8cf73f3"
 dependencies = [
  "ansi_colours",
  "base64",
